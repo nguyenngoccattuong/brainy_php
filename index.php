@@ -1,0 +1,34 @@
+<?php
+/**
+ * Brainy API - Điểm khởi đầu ứng dụng
+ * 
+ * File này nhận tất cả các request và điều hướng đến router
+ */
+
+// Hiển thị tất cả lỗi trong chế độ dev
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Cho phép CORS
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: X-Requested-With, Content-Type, Accept, Origin, Authorization');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, PATCH, OPTIONS');
+header('Content-Type: application/json');
+
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit(0);
+}
+
+// Load các thư viện và file cấu hình
+require_once 'vendor/autoload.php';
+require_once 'src/config/Database.php';
+require_once 'src/routes/Router.php';
+
+// Load biến môi trường từ file .env
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Xử lý routing
+$router = new \App\Routes\Router();
+$router->handleRequest();

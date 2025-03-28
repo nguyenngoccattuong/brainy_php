@@ -1,0 +1,32 @@
+RewriteEngine On
+RewriteBase /brainy_php/
+
+# Chuyển hướng tất cả request đến index.php nếu không phải là file/directory thật
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Ngăn truy cập vào thư mục src
+RewriteRule ^src/ - [F,L]
+
+# Ngăn truy cập vào thư mục logs
+RewriteRule ^logs/ - [F,L]
+
+# Ngăn truy cập vào file .env
+RewriteRule ^\.env - [F,L]
+
+# Cho phép CORS
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+</IfModule>
+
+# PHP settings
+<IfModule mod_php7.c>
+    php_flag display_errors On
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule> 

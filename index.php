@@ -19,6 +19,15 @@ require_once 'src/routes/Router.php';
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
+// Debug logging for environment variables
+if ($_ENV['DEBUG_MODE'] === 'true') {
+    error_log("Environment variables loaded:");
+    error_log("DB_HOST: " . $_ENV['DB_HOST']);
+    error_log("DB_NAME: " . $_ENV['DB_NAME']);
+    error_log("JWT_SECRET: " . ($_ENV['JWT_SECRET'] ?? 'not set'));
+    error_log("DEBUG_MODE: " . $_ENV['DEBUG_MODE']);
+}
+
 // Thiết lập debug log
 $logDir = __DIR__ . '/logs';
 if (!is_dir($logDir)) {

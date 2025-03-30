@@ -299,13 +299,13 @@ class AuthService {
             'exp' => time() + 3600 // Expires in 1 hour
         ];
         
-        // Mã hóa payload thành base64
-        $base64Header = base64_encode(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
-        $base64Payload = base64_encode(json_encode($payload));
+        // Mã hóa payload thành base64url
+        $base64Header = $this->base64UrlEncode(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
+        $base64Payload = $this->base64UrlEncode(json_encode($payload));
         
         // Tạo signature
-        $signature = hash_hmac('sha256', "$base64Header.$base64Payload", $_ENV['JWT_SECRET'] ?? 'brainy_secret_key');
-        $base64Signature = base64_encode($signature);
+        $signature = hash_hmac('sha256', "$base64Header.$base64Payload", $_ENV['JWT_SECRET'] ?? 'brainy_secret_key', true);
+        $base64Signature = $this->base64UrlEncode($signature);
         
         // Tạo JWT token
         return "$base64Header.$base64Payload.$base64Signature";
@@ -318,35 +318,92 @@ class AuthService {
      * @return array|bool Thông tin payload hoặc false nếu không hợp lệ
      */
     public function validateAccessToken($token) {
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("Validating token: " . $token);
+        }
+        
         // Tách token thành các phần
         $parts = explode('.', $token);
         
         if (count($parts) !== 3) {
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Invalid token format - expected 3 parts, got " . count($parts));
+            }
             return false;
         }
         
         // Lấy header và payload
-        $header = json_decode(base64_decode($parts[0]), true);
-        $payload = json_decode(base64_decode($parts[1]), true);
+        $header = json_decode($this->base64UrlDecode($parts[0]), true);
+        $payload = json_decode($this->base64UrlDecode($parts[1]), true);
+        
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("Decoded header: " . json_encode($header));
+            error_log("Decoded payload: " . json_encode($payload));
+        }
+        
+        if (!$header || !$payload) {
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Failed to decode header or payload");
+            }
+            return false;
+        }
         
         // Kiểm tra thuật toán
         if ($header['alg'] !== 'HS256') {
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Invalid algorithm - expected HS256, got " . $header['alg']);
+            }
             return false;
         }
         
         // Kiểm tra chữ ký
-        $signature = hash_hmac('sha256', "{$parts[0]}.{$parts[1]}", $_ENV['JWT_SECRET'] ?? 'brainy_secret_key');
-        $base64Signature = base64_encode($signature);
+        $signature = hash_hmac('sha256', "{$parts[0]}.{$parts[1]}", $_ENV['JWT_SECRET'] ?? 'brainy_secret_key', true);
+        $base64Signature = $this->base64UrlEncode($signature);
+        
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("Expected signature: " . $base64Signature);
+            error_log("Received signature: " . $parts[2]);
+        }
         
         if ($base64Signature !== $parts[2]) {
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Invalid signature");
+            }
             return false;
         }
         
         // Kiểm tra token có hết hạn chưa
         if (isset($payload['exp']) && $payload['exp'] < time()) {
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Token expired at " . date('Y-m-d H:i:s', $payload['exp']));
+            }
             return false;
         }
         
         return $payload;
+    }
+
+    /**
+     * Mã hóa chuỗi thành base64url
+     * 
+     * @param string $data
+     * @return string
+     */
+    private function base64UrlEncode($data) {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+    
+    /**
+     * Giải mã chuỗi base64url
+     * 
+     * @param string $data
+     * @return string
+     */
+    private function base64UrlDecode($data) {
+        $padding = strlen($data) % 4;
+        if ($padding) {
+            $data .= str_repeat('=', 4 - $padding);
+        }
+        return base64_decode(strtr($data, '-_', '+/'));
     }
 } 

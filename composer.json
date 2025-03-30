@@ -1,12 +1,10 @@
 {
     "name": "brainy/api",
-    "description": "Brainy API for vocabulary learning",
+    "description": "Brainy Vocabulary Learning API",
     "type": "project",
     "require": {
         "php": ">=7.4",
-        "vlucas/phpdotenv": "^5.6",
-        "cloudinary/cloudinary_php": "^2.0",
-        "ramsey/uuid": "^4.0"
+        "vlucas/phpdotenv": "^5.6"
     },
     "autoload": {
         "psr-4": {

@@ -26,16 +26,31 @@ class AuthMiddleware {
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? '';
         
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("Auth header: " . $authHeader);
+        }
+        
         // Kiểm tra Bearer token
         if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("No Bearer token found in header");
+            }
             return false;
         }
         
         // Lấy token
         $token = $matches[1];
         
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("Token extracted: " . $token);
+        }
+        
         // Xác thực token
         $payload = $this->authService->validateAccessToken($token);
+        
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("Token validation result: " . ($payload ? json_encode($payload) : 'false'));
+        }
         
         if (!$payload) {
             return false;

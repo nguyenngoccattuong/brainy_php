@@ -1,0 +1,507 @@
+{
+    "info": {
+        "name": "Brainy API",
+        "description": "API collection for Brainy Vocabulary Learning Application",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost/brainy_php/index.php",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Register",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/register",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "register"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"Test User\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "login"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"password123\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/logout",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "logout"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Refresh Token",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/refresh-token",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "refresh-token"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"refresh_token\": \"{{refresh_token}}\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/forgot-password",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "forgot-password"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"test@example.com\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/reset-password/{{reset_token}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "reset-password", "{{reset_token}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"password\": \"newpassword123\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Change Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/auth/change-password/{{user_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "auth", "change-password", "{{user_id}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"current_password\": \"password123\",\n    \"new_password\": \"newpassword123\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/{{user_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users", "{{user_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"new@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"New User\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Update User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/{{user_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users", "{{user_id}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"full_name\": \"Updated Name\",\n    \"email\": \"updated@example.com\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/{{user_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users", "{{user_id}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Words",
+            "item": [
+                {
+                    "name": "Get All Words",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Words (Paginated)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/paginated?page=1&limit=10",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "paginated"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Word by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/{{word_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "{{word_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Words by Lesson ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}/words",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons", "{{lesson_id}}", "words"]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Words",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/search?keyword=test",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "search"],
+                            "query": [
+                                {
+                                    "key": "keyword",
+                                    "value": "test"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Word",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"word\": \"test\",\n    \"pos\": \"noun\",\n    \"phonetic\": \"https://example.com/audio.mp3\",\n    \"phonetic_text\": \"/test/\",\n    \"phonetic_am\": \"https://example.com/audio_am.mp3\",\n    \"phonetic_am_text\": \"/test/\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Import Words",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/import",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "import"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"words\": [\n        {\n            \"word\": \"a\",\n            \"pos\": \"indefinite article\",\n            \"phonetic\": \"https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/a/a__/a__gb/a__gb_2.mp3\",\n            \"phonetic_text\": \"/ə/\",\n            \"phonetic_am\": \"https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/a__/a__us/a__us_2_rr.mp3\",\n            \"phonetic_am_text\": \"/ə/\",\n            \"senses\": [\n                {\n                    \"definition\": \"used before countable or singular nouns referring to people or things that have not already been mentioned\",\n                    \"examples\": [\n                        {\n                            \"cf\": \"\",\n                            \"x\": \"a man/horse/unit\"\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Update Word",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/{{word_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "{{word_id}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"word\": \"updated word\",\n    \"pos\": \"updated pos\",\n    \"phonetic\": \"https://example.com/updated_audio.mp3\",\n    \"phonetic_text\": \"/updated/\",\n    \"phonetic_am\": \"https://example.com/updated_audio_am.mp3\",\n    \"phonetic_am_text\": \"/updated/\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Word",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/{{word_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "{{word_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Import Words from File",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/import-file",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "import-file"]
+                        },
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": "words.json"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+} 

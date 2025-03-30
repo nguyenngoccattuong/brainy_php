@@ -67,6 +67,9 @@ class Router {
         
         // CLOUDINARY ROUTES
         $this->addRoute('POST', '/api/upload', 'CloudinaryController', 'upload');
+        $this->addRoute('POST', '/api/upload/lesson-markdown', 'CloudinaryController', 'uploadLessonMarkdown');
+        $this->addRoute('GET', '/api/files/([a-f0-9-]+)/([A-Za-z]+)', 'CloudinaryController', 'getByOwner');
+        $this->addRoute('DELETE', '/api/files/([a-f0-9-]+)', 'CloudinaryController', 'delete');
     }
     
     /**

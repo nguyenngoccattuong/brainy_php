@@ -2,85 +2,59 @@
 namespace App\Middleware;
 
 use App\Config\Database;
-use App\Services\UserService;
+use App\Services\AuthService;
 
 /**
  * Class AuthMiddleware
- * Middleware xác thực người dùng
+ * Middleware xử lý xác thực JWT token
  */
 class AuthMiddleware {
-    private $userService;
+    private $authService;
     
     public function __construct() {
         $db = new Database();
-        $this->userService = new UserService($db->connect());
+        $this->authService = new AuthService($db->connect());
     }
     
     /**
-     * Xác thực người dùng thông qua JWT token
+     * Xác thực JWT token từ header Authorization
      * 
-     * @return array|bool Thông tin người dùng đã xác thực hoặc false nếu xác thực thất bại
+     * @return array|bool Thông tin người dùng nếu xác thực thành công, ngược lại false
      */
     public function authenticate() {
-        // Kiểm tra xem Authorization header có tồn tại không
+        // Lấy Authorization header
         $headers = getallheaders();
-        if (!isset($headers['Authorization'])) {
-            return false;
-        }
+        $authHeader = $headers['Authorization'] ?? '';
         
-        // Lấy token từ Authorization header (Bearer token)
-        $authHeader = $headers['Authorization'];
+        // Kiểm tra Bearer token
         if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
             return false;
         }
         
+        // Lấy token
         $token = $matches[1];
         
-        // Xác thực token (trong ví dụ này sử dụng phương pháp đơn giản)
-        return $this->validateToken($token);
+        // Xác thực token
+        $payload = $this->authService->validateAccessToken($token);
+        
+        if (!$payload) {
+            return false;
+        }
+        
+        return $payload;
     }
     
     /**
-     * Xác thực JWT token
+     * Kiểm tra xem người dùng có quyền truy cập tài nguyên không
+     * Có thể mở rộng để kiểm tra quyền chi tiết hơn
      * 
-     * @param string $token JWT token
-     * @return array|bool Thông tin người dùng hoặc false nếu token không hợp lệ
+     * @param string $resourceId ID của tài nguyên (nếu cần)
+     * @param string $userId ID của người dùng đã xác thực
+     * @return bool
      */
-    private function validateToken($token) {
-        try {
-            // Trong thực tế, bạn sẽ sử dụng thư viện JWT để xác thực token
-            // Ví dụ này dùng phương pháp đơn giản để minh họa
-            list($header, $payload, $signature) = explode('.', $token);
-            
-            // Giải mã payload
-            $decodedPayload = json_decode(base64_decode($payload), true);
-            
-            if (!isset($decodedPayload['user_id']) || !isset($decodedPayload['exp'])) {
-                return false;
-            }
-            
-            // Kiểm tra token hết hạn
-            if ($decodedPayload['exp'] < time()) {
-                return false;
-            }
-            
-            // Lấy thông tin người dùng từ database
-            $userId = $decodedPayload['user_id'];
-            $user = $this->userService->getUserById($userId);
-            
-            if (!$user) {
-                return false;
-            }
-            
-            // Trả về thông tin người dùng đã xác thực
-            return $user;
-        } catch (\Exception $e) {
-            // Ghi log lỗi
-            $logFile = __DIR__ . '/../../logs/auth_error.log';
-            $message = date('Y-m-d H:i:s') . ' - Auth Error: ' . $e->getMessage() . "\n";
-            file_put_contents($logFile, $message, FILE_APPEND);
-            
-            return false;
-        }
+    public function authorize($resourceId, $userId) {
+        // Mặc định cho phép truy cập
+        // Có thể mở rộng để kiểm tra quyền chi tiết hơn
+        return true;
     }
 } 

@@ -16,14 +16,27 @@ class Router {
      * Đăng ký các routes cho API
      */
     private function registerRoutes() {
+        // HOME ROUTE
+        $this->addRoute('GET', '', 'HomeController', 'index');
+        $this->addRoute('GET', '/brainy_php', 'HomeController', 'index');
+        
+        // AUTH ROUTES
+        $this->addRoute('POST', '/api/auth/register', 'AuthController', 'register');
+        $this->addRoute('POST', '/api/auth/login', 'AuthController', 'login');
+        $this->addRoute('POST', '/api/auth/logout', 'AuthController', 'logout');
+        $this->addRoute('POST', '/api/auth/logout-all/([a-f0-9-]+)', 'AuthController', 'logoutAll');
+        $this->addRoute('POST', '/api/auth/refresh-token', 'AuthController', 'refreshToken');
+        $this->addRoute('POST', '/api/auth/forgot-password', 'AuthController', 'forgotPassword');
+        $this->addRoute('GET', '/api/auth/reset-password/([a-zA-Z0-9]+)', 'AuthController', 'validateResetToken');
+        $this->addRoute('POST', '/api/auth/reset-password/([a-zA-Z0-9]+)', 'AuthController', 'resetPassword');
+        $this->addRoute('POST', '/api/auth/change-password/([a-f0-9-]+)', 'AuthController', 'changePassword');
+
         // USER ROUTES
         $this->addRoute('GET', '/api/users', 'UserController', 'getAll');
         $this->addRoute('GET', '/api/users/([a-f0-9-]+)', 'UserController', 'getById');
         $this->addRoute('POST', '/api/users', 'UserController', 'create');
         $this->addRoute('PUT', '/api/users/([a-f0-9-]+)', 'UserController', 'update');
         $this->addRoute('DELETE', '/api/users/([a-f0-9-]+)', 'UserController', 'delete');
-        $this->addRoute('POST', '/api/auth/login', 'AuthController', 'login');
-        $this->addRoute('POST', '/api/auth/register', 'AuthController', 'register');
         
         // CATEGORY ROUTES
         $this->addRoute('GET', '/api/categories', 'CategoryController', 'getAll');
@@ -84,10 +97,35 @@ class Router {
         // Loại bỏ trailing slash
         $uri = rtrim($uri, '/');
         
+        // Xử lý trường hợp không có mod_rewrite
+        // Loại bỏ phần /brainy_php/index.php nếu có
+        $uri = preg_replace('#^/brainy_php/index\.php#', '', $uri);
+        
+        // Xử lý URL gốc
+        if ($uri === '/brainy_php' || $uri === '') {
+            $this->sendResponse(200, [
+                'name' => 'Brainy API',
+                'version' => '1.0.0',
+                'description' => 'API for vocabulary learning application',
+                'endpoints' => $this->getAvailableRoutes()
+            ]);
+            return;
+        }
+        
+        // Debug info - chỉ trong chế độ dev
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("REQUEST: $method $uri");
+        }
+        
         // Tìm route phù hợp
         foreach ($this->routes as $route) {
             if ($method !== $route['method']) {
                 continue;
+            }
+            
+            // Debug route matcher
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Checking route: " . $route['path']);
             }
             
             // Kiểm tra xem path có khớp không (hỗ trợ regex)
@@ -99,7 +137,7 @@ class Router {
                 $controllerClass = 'App\\Controllers\\' . $route['controller'];
                 
                 if (!class_exists($controllerClass)) {
-                    $this->sendResponse(404, ['error' => 'Controller không tồn tại']);
+                    $this->sendResponse(404, ['error' => 'Controller không tồn tại: ' . $controllerClass]);
                     return;
                 }
                 
@@ -107,13 +145,18 @@ class Router {
                 $action = $route['action'];
                 
                 if (!method_exists($controller, $action)) {
-                    $this->sendResponse(404, ['error' => 'Phương thức không tồn tại']);
+                    $this->sendResponse(404, ['error' => 'Phương thức không tồn tại: ' . $action]);
                     return;
                 }
                 
                 try {
                     // Lấy input data từ request
                     $input = $this->getRequestData();
+                    
+                    // Log request data trong chế độ debug
+                    if ($_ENV['DEBUG_MODE'] === 'true') {
+                        error_log("Input data: " . json_encode($input));
+                    }
                     
                     // Gọi action với params và input data
                     $result = $controller->$action(...array_merge($matches, [$input]));
@@ -122,7 +165,8 @@ class Router {
                     $this->sendResponse(200, $result);
                 } catch (\Exception $e) {
                     $this->sendResponse(500, [
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
+                        'trace' => $_ENV['DEBUG_MODE'] === 'true' ? $e->getTraceAsString() : null
                     ]);
                 }
                 
@@ -132,7 +176,8 @@ class Router {
         
         // Không tìm thấy route phù hợp
         $this->sendResponse(404, [
-            'error' => 'Không tìm thấy API endpoint'
+            'error' => 'Không tìm thấy API endpoint: ' . $uri,
+            'available_routes' => $_ENV['DEBUG_MODE'] === 'true' ? $this->getAvailableRoutes() : null
         ]);
     }
     
@@ -168,5 +213,19 @@ class Router {
         http_response_code($statusCode);
         echo json_encode($data);
         exit;
+    }
+    
+    /**
+     * Lấy danh sách các routes có sẵn cho debug
+     */
+    private function getAvailableRoutes() {
+        $routes = [];
+        foreach ($this->routes as $route) {
+            $routes[] = [
+                'method' => $route['method'],
+                'path' => $route['path']
+            ];
+        }
+        return $routes;
     }
 } 

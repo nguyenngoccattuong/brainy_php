@@ -14,9 +14,9 @@ class Cloudinary {
      * Constructor - Khởi tạo cấu hình Cloudinary từ biến môi trường
      */
     public function __construct() {
-        $this->cloudName = $_ENV['CLOUDINARY_CLOUD_NAME'] ?? 'duhncgkpo';
-        $this->apiKey = $_ENV['CLOUDINARY_API_KEY'] ?? '425358843362883';
-        $this->apiSecret = $_ENV['CLOUDINARY_API_SECRET'] ?? 'LWXbOOgeXvXmo2ASjXtpeIr6w1U';
+        $this->cloudName = $_ENV['CLOUDINARY_CLOUD_NAME'];
+        $this->apiKey = $_ENV['CLOUDINARY_API_KEY'];
+        $this->apiSecret = $_ENV['CLOUDINARY_API_SECRET'];
     }
     
     /**

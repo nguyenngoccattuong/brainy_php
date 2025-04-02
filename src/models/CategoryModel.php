@@ -8,10 +8,7 @@ class CategoryModel extends Model {
      * Lấy danh sách tất cả categories
      */
     public function getAll() {
-        $sql = "SELECT c.*, cf.file_url as image_url 
-                FROM {$this->table} c 
-                LEFT JOIN cloudinary_files cf ON c.image_id = cf.id 
-                ORDER BY c.created_at DESC";
+        $sql = "SELECT * FROM {$this->table} ORDER BY created_at DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll();
@@ -21,10 +18,7 @@ class CategoryModel extends Model {
      * Lấy category theo ID
      */
     public function getById($id) {
-        $sql = "SELECT c.*, cf.file_url as image_url 
-                FROM {$this->table} c 
-                LEFT JOIN cloudinary_files cf ON c.image_id = cf.id 
-                WHERE c.id = :id";
+        $sql = "SELECT * FROM {$this->table} WHERE id = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':id', $id);
         $stmt->execute();
@@ -35,21 +29,21 @@ class CategoryModel extends Model {
      * Tạo category mới
      */
     public function create($data) {
-        return $this->insert($data);
+        return parent::create($data);
     }
     
     /**
      * Cập nhật category
      */
     public function update($id, $data) {
-        return $this->updateById($id, $data);
+        return parent::update($id, $data);
     }
     
     /**
      * Xóa category
      */
     public function delete($id) {
-        return $this->deleteById($id);
+        return parent::delete($id);
     }
     
     /**

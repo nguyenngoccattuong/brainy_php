@@ -1,17 +1,15 @@
 <?php
 namespace App\Controllers;
 
-use App\Config\Database;
-use App\Models\LessonModel;
+use App\Services\LessonService;
 use App\Middleware\AuthMiddleware;
 
 class LessonController {
-    private $lessonModel;
+    private $lessonService;
     private $authMiddleware;
     
     public function __construct() {
-        $db = new Database();
-        $this->lessonModel = new LessonModel($db->connect());
+        $this->lessonService = new LessonService();
         $this->authMiddleware = new AuthMiddleware();
     }
     
@@ -27,7 +25,7 @@ class LessonController {
         }
         
         try {
-            $lessons = $this->lessonModel->getAll();
+            $lessons = $this->lessonService->getAllLessons();
             return ['lessons' => $lessons];
         } catch (\Exception $e) {
             error_log("GetAll Lessons Error: " . $e->getMessage());
@@ -48,18 +46,15 @@ class LessonController {
         }
         
         try {
-            $lesson = $this->lessonModel->getById($lessonId);
-            
-            if (!$lesson) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy lesson'];
-            }
-            
+            $lesson = $this->lessonService->getLessonById($lessonId);
             return ['lesson' => $lesson];
         } catch (\Exception $e) {
-            error_log("GetById Lesson Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể lấy thông tin lesson'];
+            if ($e->getMessage() === 'Không tìm thấy lesson') {
+                http_response_code(404);
+            } else {
+                http_response_code(500);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -75,7 +70,7 @@ class LessonController {
         }
         
         try {
-            $lessons = $this->lessonModel->getByCategoryId($categoryId);
+            $lessons = $this->lessonService->getLessonsByCategoryId($categoryId);
             return ['lessons' => $lessons];
         } catch (\Exception $e) {
             error_log("GetByCategoryId Lessons Error: " . $e->getMessage());
@@ -112,77 +107,19 @@ class LessonController {
         }
         
         try {
-            // Kiểm tra category tồn tại
-            $db = new Database();
-            $categoryModel = new \App\Models\CategoryModel($db->connect());
-            $category = $categoryModel->getById($data['category_id']);
-            if (!$category) {
-                http_response_code(400);
-                return ['error' => 'Category không tồn tại'];
-            }
-
-            // Lấy order_index lớn nhất của category
-            $maxOrder = $this->lessonModel->getMaxOrderIndex($data['category_id']);
-            $data['order_index'] = $maxOrder + 1;
-
-            if ($_ENV['DEBUG_MODE'] === 'true') {
-                error_log("Creating lesson with data: " . json_encode($data));
-            }
-            
-            // Tạo lesson trước để lấy ID
-            $lessonId = $this->lessonModel->create($data);
-            
-            if (!$lessonId) {
-                if ($_ENV['DEBUG_MODE'] === 'true') {
-                    error_log("Failed to create lesson in database");
-                }
-                http_response_code(400);
-                return ['error' => 'Không thể tạo lesson'];
-            }
-
-            if ($_ENV['DEBUG_MODE'] === 'true') {
-                error_log("Lesson created with ID: " . $lessonId);
-            }
-
-            // Upload file markdown lên Cloudinary
-            $cloudinaryController = new CloudinaryController();
-            $uploadResult = $cloudinaryController->uploadLessonMarkdown([
-                'content' => $data['content'],
-                'lesson_id' => $lessonId
-            ]);
-
-            if (isset($uploadResult['error'])) {
-                // Nếu upload thất bại, xóa lesson đã tạo
-                $this->lessonModel->delete($lessonId);
-                if ($_ENV['DEBUG_MODE'] === 'true') {
-                    error_log("Failed to upload markdown: " . $uploadResult['error']);
-                }
-                http_response_code(400);
-                return ['error' => 'Không thể upload file markdown: ' . $uploadResult['error']];
-            }
-
-            if ($_ENV['DEBUG_MODE'] === 'true') {
-                error_log("Markdown uploaded successfully: " . json_encode($uploadResult));
-            }
-
-            // Cập nhật lesson với cloudinary_file_id
-            $this->lessonModel->update($lessonId, [
-                'cloudinary_file_id' => $uploadResult['file']['id']
-            ]);
-            
-            $lesson = $this->lessonModel->getById($lessonId);
+            $result = $this->lessonService->createLesson($data);
             
             http_response_code(201);
             return [
                 'message' => 'Tạo lesson thành công',
-                'lesson' => $lesson,
-                'markdown_file' => $uploadResult['file']
+                'lesson' => $result['lesson'],
+                'markdown_file' => $result['markdown_file']
             ];
         } catch (\Exception $e) {
             error_log("Create Lesson Error: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
-            return ['error' => 'Không thể tạo lesson: ' . $e->getMessage()];
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -198,22 +135,7 @@ class LessonController {
         }
         
         try {
-            // Kiểm tra lesson tồn tại
-            $lesson = $this->lessonModel->getById($lessonId);
-            if (!$lesson) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy lesson'];
-            }
-            
-            // Cập nhật thông tin
-            $updated = $this->lessonModel->update($lessonId, $data);
-            
-            if (!$updated) {
-                http_response_code(400);
-                return ['error' => 'Không thể cập nhật thông tin'];
-            }
-            
-            $lesson = $this->lessonModel->getById($lessonId);
+            $lesson = $this->lessonService->updateLesson($lessonId, $data);
             
             return [
                 'message' => 'Cập nhật thông tin thành công',
@@ -221,8 +143,12 @@ class LessonController {
             ];
         } catch (\Exception $e) {
             error_log("Update Lesson Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể cập nhật thông tin'];
+            if ($e->getMessage() === 'Không tìm thấy lesson') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -238,26 +164,16 @@ class LessonController {
         }
         
         try {
-            // Kiểm tra lesson tồn tại
-            $lesson = $this->lessonModel->getById($lessonId);
-            if (!$lesson) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy lesson'];
-            }
-            
-            // Xóa lesson
-            $deleted = $this->lessonModel->delete($lessonId);
-            
-            if (!$deleted) {
-                http_response_code(400);
-                return ['error' => 'Không thể xóa lesson'];
-            }
-            
+            $this->lessonService->deleteLesson($lessonId);
             return ['message' => 'Xóa lesson thành công'];
         } catch (\Exception $e) {
             error_log("Delete Lesson Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể xóa lesson'];
+            if ($e->getMessage() === 'Không tìm thấy lesson') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
 } 

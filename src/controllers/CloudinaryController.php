@@ -474,4 +474,29 @@ class CloudinaryController {
         
         return json_decode($response, true);
     }
+    
+    /**
+     * Cập nhật owner của file
+     * 
+     * @param string $fileId UUID của file
+     * @param string $ownerId UUID của owner mới
+     * @param string $ownerType Loại owner mới
+     * @return bool
+     */
+    public function updateOwner($fileId, $ownerId, $ownerType) {
+        try {
+            $file = $this->cloudinaryFileModel->getById($fileId);
+            if (!$file) {
+                return false;
+            }
+
+            return $this->cloudinaryFileModel->update($fileId, [
+                'owner_id' => $ownerId,
+                'owner_type' => $ownerType
+            ]);
+        } catch (\Exception $e) {
+            error_log("Update Owner Error: " . $e->getMessage());
+            return false;
+        }
+    }
 } 

@@ -1,22 +1,20 @@
 <?php
 namespace App\Controllers;
 
-use App\Config\Database;
-use App\Models\UserModel;
+use App\Services\UserService;
 use App\Middleware\AuthMiddleware;
 
 class UserController {
-    private $userModel;
+    private $userService;
     private $authMiddleware;
     
     public function __construct() {
-        $db = new Database();
-        $this->userModel = new UserModel($db->connect());
+        $this->userService = new UserService();
         $this->authMiddleware = new AuthMiddleware();
     }
     
     /**
-     * Lấy danh sách tất cả người dùng
+     * Lấy danh sách tất cả users
      */
     public function getAll() {
         // Xác thực người dùng
@@ -27,22 +25,17 @@ class UserController {
         }
         
         try {
-            $sql = "SELECT id, username, email, full_name, avatar_url, status, created_at, updated_at 
-                    FROM users ORDER BY created_at DESC";
-            $stmt = $this->userModel->getConnection()->prepare($sql);
-            $stmt->execute();
-            $users = $stmt->fetchAll();
-            
+            $users = $this->userService->getAllUsers();
             return ['users' => $users];
         } catch (\Exception $e) {
             error_log("GetAll Users Error: " . $e->getMessage());
             http_response_code(500);
-            return ['error' => 'Không thể lấy danh sách người dùng'];
+            return ['error' => 'Không thể lấy danh sách users'];
         }
     }
     
     /**
-     * Lấy thông tin người dùng theo ID
+     * Lấy user theo ID
      */
     public function getById($userId) {
         // Xác thực người dùng
@@ -53,26 +46,21 @@ class UserController {
         }
         
         try {
-            $user = $this->userModel->getById($userId);
-            
-            if (!$user) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy người dùng'];
-            }
-            
-            // Loại bỏ thông tin nhạy cảm
-            unset($user['password']);
-            
+            $user = $this->userService->getUserById($userId);
             return ['user' => $user];
         } catch (\Exception $e) {
             error_log("GetById User Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể lấy thông tin người dùng'];
+            if ($e->getMessage() === 'Không tìm thấy user') {
+                http_response_code(404);
+            } else {
+                http_response_code(500);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
     /**
-     * Tạo người dùng mới
+     * Tạo user mới
      */
     public function create($data) {
         // Xác thực người dùng
@@ -83,39 +71,37 @@ class UserController {
         }
         
         // Kiểm tra dữ liệu đầu vào
-        $requiredFields = ['username', 'email', 'password', 'full_name'];
-        foreach ($requiredFields as $field) {
-            if (!isset($data[$field]) || empty($data[$field])) {
-                http_response_code(400);
-                return ['error' => "Thiếu trường bắt buộc: {$field}"];
-            }
+        if (!isset($data['username']) || empty($data['username'])) {
+            http_response_code(400);
+            return ['error' => 'Username là bắt buộc'];
         }
-        
+        if (!isset($data['email']) || empty($data['email'])) {
+            http_response_code(400);
+            return ['error' => 'Email là bắt buộc'];
+        }
+        if (!isset($data['password']) || empty($data['password'])) {
+            http_response_code(400);
+            return ['error' => 'Password là bắt buộc'];
+        }
+
         try {
-            $userId = $this->userModel->register($data);
-            
-            if (!$userId) {
-                http_response_code(400);
-                return ['error' => 'Không thể tạo người dùng'];
-            }
-            
-            $user = $this->userModel->getById($userId);
-            unset($user['password']);
+            $user = $this->userService->createUser($data);
             
             http_response_code(201);
             return [
-                'message' => 'Tạo người dùng thành công',
+                'message' => 'Tạo user thành công',
                 'user' => $user
             ];
         } catch (\Exception $e) {
             error_log("Create User Error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
-            return ['error' => 'Không thể tạo người dùng'];
+            return ['error' => $e->getMessage()];
         }
     }
     
     /**
-     * Cập nhật thông tin người dùng
+     * Cập nhật user
      */
     public function update($userId, $data) {
         // Xác thực người dùng
@@ -126,23 +112,7 @@ class UserController {
         }
         
         try {
-            // Kiểm tra người dùng tồn tại
-            $user = $this->userModel->getById($userId);
-            if (!$user) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy người dùng'];
-            }
-            
-            // Cập nhật thông tin
-            $updated = $this->userModel->updateUser($userId, $data);
-            
-            if (!$updated) {
-                http_response_code(400);
-                return ['error' => 'Không thể cập nhật thông tin'];
-            }
-            
-            $user = $this->userModel->getById($userId);
-            unset($user['password']);
+            $user = $this->userService->updateUser($userId, $data);
             
             return [
                 'message' => 'Cập nhật thông tin thành công',
@@ -150,13 +120,17 @@ class UserController {
             ];
         } catch (\Exception $e) {
             error_log("Update User Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể cập nhật thông tin'];
+            if ($e->getMessage() === 'Không tìm thấy user') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
     /**
-     * Xóa người dùng
+     * Xóa user
      */
     public function delete($userId) {
         // Xác thực người dùng
@@ -167,26 +141,127 @@ class UserController {
         }
         
         try {
-            // Kiểm tra người dùng tồn tại
-            $user = $this->userModel->getById($userId);
-            if (!$user) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy người dùng'];
-            }
-            
-            // Xóa người dùng
-            $deleted = $this->userModel->delete($userId);
-            
-            if (!$deleted) {
-                http_response_code(400);
-                return ['error' => 'Không thể xóa người dùng'];
-            }
-            
-            return ['message' => 'Xóa người dùng thành công'];
+            $this->userService->deleteUser($userId);
+            return ['message' => 'Xóa user thành công'];
         } catch (\Exception $e) {
             error_log("Delete User Error: " . $e->getMessage());
+            if ($e->getMessage() === 'Không tìm thấy user') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Lấy tiến độ học của user
+     */
+    public function getProgress($userId) {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            http_response_code(401);
+            return ['error' => 'Unauthorized'];
+        }
+        
+        try {
+            $progress = $this->userService->getUserProgress($userId);
+            return ['progress' => $progress];
+        } catch (\Exception $e) {
+            error_log("Get User Progress Error: " . $e->getMessage());
             http_response_code(500);
-            return ['error' => 'Không thể xóa người dùng'];
+            return ['error' => 'Không thể lấy tiến độ học'];
+        }
+    }
+
+    /**
+     * Cập nhật tiến độ học
+     */
+    public function updateProgress($userId, $wordId, $data) {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            http_response_code(401);
+            return ['error' => 'Unauthorized'];
+        }
+        
+        try {
+            $progress = $this->userService->updateUserProgress($userId, $wordId, $data);
+            return [
+                'message' => 'Cập nhật tiến độ thành công',
+                'progress' => $progress
+            ];
+        } catch (\Exception $e) {
+            error_log("Update User Progress Error: " . $e->getMessage());
+            http_response_code(500);
+            return ['error' => 'Không thể cập nhật tiến độ học'];
+        }
+    }
+
+    /**
+     * Lấy ghi chú của user
+     */
+    public function getNotes($userId) {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            http_response_code(401);
+            return ['error' => 'Unauthorized'];
+        }
+        
+        try {
+            $notes = $this->userService->getUserNotes($userId);
+            return ['notes' => $notes];
+        } catch (\Exception $e) {
+            error_log("Get User Notes Error: " . $e->getMessage());
+            http_response_code(500);
+            return ['error' => 'Không thể lấy ghi chú'];
+        }
+    }
+
+    /**
+     * Tạo/cập nhật ghi chú
+     */
+    public function saveNote($userId, $wordId, $note) {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            http_response_code(401);
+            return ['error' => 'Unauthorized'];
+        }
+        
+        try {
+            $result = $this->userService->saveUserNote($userId, $wordId, $note);
+            return [
+                'message' => 'Lưu ghi chú thành công',
+                'note' => $result
+            ];
+        } catch (\Exception $e) {
+            error_log("Save User Note Error: " . $e->getMessage());
+            http_response_code(500);
+            return ['error' => 'Không thể lưu ghi chú'];
+        }
+    }
+
+    /**
+     * Xóa ghi chú
+     */
+    public function deleteNote($userId, $wordId) {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            http_response_code(401);
+            return ['error' => 'Unauthorized'];
+        }
+        
+        try {
+            $this->userService->deleteUserNote($userId, $wordId);
+            return ['message' => 'Xóa ghi chú thành công'];
+        } catch (\Exception $e) {
+            error_log("Delete User Note Error: " . $e->getMessage());
+            http_response_code(500);
+            return ['error' => 'Không thể xóa ghi chú'];
         }
     }
 } 

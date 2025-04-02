@@ -127,4 +127,21 @@ class UserModel extends Model {
             return false;
         }
     }
+    
+    /**
+     * Lấy danh sách tất cả users
+     * 
+     * @return array
+     */
+    public function getAll() {
+        try {
+            $sql = "SELECT * FROM {$this->table} ORDER BY created_at DESC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (\PDOException $e) {
+            error_log("GetAll Users Error: " . $e->getMessage());
+            return [];
+        }
+    }
 } 

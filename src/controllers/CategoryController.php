@@ -1,17 +1,15 @@
 <?php
 namespace App\Controllers;
 
-use App\Config\Database;
-use App\Models\CategoryModel;
+use App\Services\CategoryService;
 use App\Middleware\AuthMiddleware;
 
 class CategoryController {
-    private $categoryModel;
+    private $categoryService;
     private $authMiddleware;
     
     public function __construct() {
-        $db = new Database();
-        $this->categoryModel = new CategoryModel($db->connect());
+        $this->categoryService = new CategoryService();
         $this->authMiddleware = new AuthMiddleware();
     }
     
@@ -27,7 +25,7 @@ class CategoryController {
         }
         
         try {
-            $categories = $this->categoryModel->getAll();
+            $categories = $this->categoryService->getAllCategories();
             return ['categories' => $categories];
         } catch (\Exception $e) {
             error_log("GetAll Categories Error: " . $e->getMessage());
@@ -48,18 +46,16 @@ class CategoryController {
         }
         
         try {
-            $category = $this->categoryModel->getById($categoryId);
-            
-            if (!$category) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy category'];
-            }
-            
+            $category = $this->categoryService->getCategoryById($categoryId);
             return ['category' => $category];
         } catch (\Exception $e) {
             error_log("GetById Category Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể lấy thông tin category'];
+            if ($e->getMessage() === 'Không tìm thấy category') {
+                http_response_code(404);
+            } else {
+                http_response_code(500);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -89,14 +85,7 @@ class CategoryController {
                 error_log("Creating category with data: " . json_encode($data));
             }
 
-            $categoryId = $this->categoryModel->create($data);
-            
-            if (!$categoryId) {
-                http_response_code(400);
-                return ['error' => 'Không thể tạo category'];
-            }
-            
-            $category = $this->categoryModel->getById($categoryId);
+            $category = $this->categoryService->createCategory($data);
             
             http_response_code(201);
             return [
@@ -107,7 +96,7 @@ class CategoryController {
             error_log("Create Category Error: " . $e->getMessage());
             error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
-            return ['error' => 'Không thể tạo category: ' . $e->getMessage()];
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -123,22 +112,7 @@ class CategoryController {
         }
         
         try {
-            // Kiểm tra category tồn tại
-            $category = $this->categoryModel->getById($categoryId);
-            if (!$category) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy category'];
-            }
-            
-            // Cập nhật thông tin
-            $updated = $this->categoryModel->update($categoryId, $data);
-            
-            if (!$updated) {
-                http_response_code(400);
-                return ['error' => 'Không thể cập nhật thông tin'];
-            }
-            
-            $category = $this->categoryModel->getById($categoryId);
+            $category = $this->categoryService->updateCategory($categoryId, $data);
             
             return [
                 'message' => 'Cập nhật thông tin thành công',
@@ -146,8 +120,12 @@ class CategoryController {
             ];
         } catch (\Exception $e) {
             error_log("Update Category Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể cập nhật thông tin'];
+            if ($e->getMessage() === 'Không tìm thấy category') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -163,26 +141,16 @@ class CategoryController {
         }
         
         try {
-            // Kiểm tra category tồn tại
-            $category = $this->categoryModel->getById($categoryId);
-            if (!$category) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy category'];
-            }
-            
-            // Xóa category
-            $deleted = $this->categoryModel->delete($categoryId);
-            
-            if (!$deleted) {
-                http_response_code(400);
-                return ['error' => 'Không thể xóa category'];
-            }
-            
+            $this->categoryService->deleteCategory($categoryId);
             return ['message' => 'Xóa category thành công'];
         } catch (\Exception $e) {
             error_log("Delete Category Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể xóa category'];
+            if ($e->getMessage() === 'Không tìm thấy category') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
 } 

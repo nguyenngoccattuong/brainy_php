@@ -160,9 +160,9 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/auth/change-password/{{user_id}}",
+                            "raw": "{{base_url}}/api/auth/change-password",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "auth", "change-password", "{{user_id}}"]
+                            "path": ["api", "auth", "change-password"]
                         },
                         "body": {
                             "mode": "raw",
@@ -173,10 +173,10 @@
             ]
         },
         {
-            "name": "Users",
+            "name": "Categories",
             "item": [
                 {
-                    "name": "Get All Users",
+                    "name": "Get All Categories",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -186,14 +186,14 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/users",
+                            "raw": "{{base_url}}/api/categories",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "users"]
+                            "path": ["api", "categories"]
                         }
                     }
                 },
                 {
-                    "name": "Get User by ID",
+                    "name": "Get Category by ID",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -203,14 +203,14 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/users/{{user_id}}",
+                            "raw": "{{base_url}}/api/categories/{{category_id}}",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "users", "{{user_id}}"]
+                            "path": ["api", "categories", "{{category_id}}"]
                         }
                     }
                 },
                 {
-                    "name": "Create User",
+                    "name": "Create Category",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -224,18 +224,18 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/users",
+                            "raw": "{{base_url}}/api/categories",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "users"]
+                            "path": ["api", "categories"]
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"new@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"New User\"\n}"
+                            "raw": "{\n    \"title\": \"Test Category\",\n    \"description\": \"This is a test category\",\n    \"status\": \"active\",\n    \"order_index\": 1\n}"
                         }
                     }
                 },
                 {
-                    "name": "Update User",
+                    "name": "Update Category",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -249,18 +249,18 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/users/{{user_id}}",
+                            "raw": "{{base_url}}/api/categories/{{category_id}}",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "users", "{{user_id}}"]
+                            "path": ["api", "categories", "{{category_id}}"]
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"full_name\": \"Updated Name\",\n    \"email\": \"updated@example.com\"\n}"
+                            "raw": "{\n    \"title\": \"Updated Category\",\n    \"description\": \"This is an updated category\",\n    \"status\": \"active\",\n    \"order_index\": 2\n}"
                         }
                     }
                 },
                 {
-                    "name": "Delete User",
+                    "name": "Delete Category",
                     "request": {
                         "method": "DELETE",
                         "header": [
@@ -270,9 +270,132 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/users/{{user_id}}",
+                            "raw": "{{base_url}}/api/categories/{{category_id}}",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "users", "{{user_id}}"]
+                            "path": ["api", "categories", "{{category_id}}"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Lessons",
+            "item": [
+                {
+                    "name": "Get All Lessons",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Lesson by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons", "{{lesson_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Lessons by Category",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/categories/{{category_id}}/lessons",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "categories", "{{category_id}}", "lessons"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Lesson",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Test Lesson\",\n    \"category_id\": \"{{category_id}}\",\n    \"content\": \"# Lesson Content\\n\\nThis is a test lesson content.\",\n    \"status\": \"active\",\n    \"order_index\": 1\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Update Lesson",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons", "{{lesson_id}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Updated Lesson\",\n    \"content\": \"# Updated Content\\n\\nThis is an updated lesson content.\",\n    \"status\": \"active\",\n    \"order_index\": 2\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Lesson",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons", "{{lesson_id}}"]
                         }
                     }
                 }
@@ -299,7 +422,7 @@
                     }
                 },
                 {
-                    "name": "Get All Words (Paginated)",
+                    "name": "Get Words (Paginated)",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -343,7 +466,7 @@
                     }
                 },
                 {
-                    "name": "Get Words by Lesson ID",
+                    "name": "Get Words by Lesson",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -403,32 +526,7 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"word\": \"test\",\n    \"pos\": \"noun\",\n    \"phonetic\": \"https://example.com/audio.mp3\",\n    \"phonetic_text\": \"/test/\",\n    \"phonetic_am\": \"https://example.com/audio_am.mp3\",\n    \"phonetic_am_text\": \"/test/\"\n}"
-                        }
-                    }
-                },
-                {
-                    "name": "Import Words",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            },
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/words/import",
-                            "host": ["{{base_url}}"],
-                            "path": ["api", "words", "import"]
-                        },
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"words\": [\n        {\n            \"word\": \"a\",\n            \"pos\": \"indefinite article\",\n            \"phonetic\": \"https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/a/a__/a__gb/a__gb_2.mp3\",\n            \"phonetic_text\": \"/ə/\",\n            \"phonetic_am\": \"https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/a__/a__us/a__us_2_rr.mp3\",\n            \"phonetic_am_text\": \"/ə/\",\n            \"senses\": [\n                {\n                    \"definition\": \"used before countable or singular nouns referring to people or things that have not already been mentioned\",\n                    \"examples\": [\n                        {\n                            \"cf\": \"\",\n                            \"x\": \"a man/horse/unit\"\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
+                            "raw": "{\n    \"word\": \"test\",\n    \"pos\": \"noun\",\n    \"phonetic\": \"https://example.com/audio.mp3\",\n    \"phonetic_text\": \"/test/\",\n    \"phonetic_am\": \"https://example.com/audio_am.mp3\",\n    \"phonetic_am_text\": \"/test/\",\n    \"lesson_id\": \"{{lesson_id}}\",\n    \"senses\": [\n        {\n            \"definition\": \"This is a test definition\",\n            \"examples\": [\n                {\n                    \"x\": \"This is a test example\",\n                    \"cf\": \"This is a test translation\"\n                }\n            ]\n        }\n    ]\n}"
                         }
                     }
                 },
@@ -453,7 +551,7 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"word\": \"updated word\",\n    \"pos\": \"updated pos\",\n    \"phonetic\": \"https://example.com/updated_audio.mp3\",\n    \"phonetic_text\": \"/updated/\",\n    \"phonetic_am\": \"https://example.com/updated_audio_am.mp3\",\n    \"phonetic_am_text\": \"/updated/\"\n}"
+                            "raw": "{\n    \"word\": \"updated\",\n    \"pos\": \"verb\",\n    \"phonetic_text\": \"/updated/\",\n    \"phonetic_am_text\": \"/updated/\"\n}"
                         }
                     }
                 },
@@ -475,90 +573,7 @@
                     }
                 },
                 {
-                    "name": "Import Words from File",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/words/import-file",
-                            "host": ["{{base_url}}"],
-                            "path": ["api", "words", "import-file"]
-                        },
-                        "body": {
-                            "mode": "formdata",
-                            "formdata": [
-                                {
-                                    "key": "file",
-                                    "type": "file",
-                                    "src": "words.json"
-                                }
-                            ]
-                        }
-                    }
-                }
-            ]
-        },
-        {
-            "name": "Lessons",
-            "item": [
-                {
-                    "name": "Get All Lessons",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/lessons",
-                            "host": ["{{base_url}}"],
-                            "path": ["api", "lessons"]
-                        }
-                    }
-                },
-                {
-                    "name": "Get Lesson by ID",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
-                            "host": ["{{base_url}}"],
-                            "path": ["api", "lessons", "{{lesson_id}}"]
-                        }
-                    }
-                },
-                {
-                    "name": "Get Lessons by Category ID",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{access_token}}"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{base_url}}/api/categories/{{category_id}}/lessons",
-                            "host": ["{{base_url}}"],
-                            "path": ["api", "categories", "{{category_id}}", "lessons"]
-                        }
-                    }
-                },
-                {
-                    "name": "Create Lesson",
+                    "name": "Import Words",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -572,18 +587,40 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/lessons",
+                            "raw": "{{base_url}}/api/words/import",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "lessons"]
+                            "path": ["api", "words", "import"]
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"title\": \"Lesson Title\",\n    \"category_id\": \"{{category_id}}\",\n    \"sub_title\": \"Optional Subtitle\",\n    \"content\": \"# Markdown Content\\n\\nThis is a lesson content...\"\n}"
+                            "raw": "{\n    \"words\": [\n        {\n            \"word\": \"test\",\n            \"pos\": \"noun\",\n            \"phonetic_text\": \"/test/\",\n            \"phonetic_am_text\": \"/test/\",\n            \"lesson_id\": \"{{lesson_id}}\",\n            \"senses\": [\n                {\n                    \"definition\": \"This is a test definition\",\n                    \"examples\": [\n                        {\n                            \"x\": \"This is a test example\",\n                            \"cf\": \"This is a test translation\"\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "User Progress",
+            "item": [
+                {
+                    "name": "Get User Progress",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/{{user_id}}/progress",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users", "{{user_id}}", "progress"]
                         }
                     }
                 },
                 {
-                    "name": "Update Lesson",
+                    "name": "Update User Progress",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -597,18 +634,65 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "raw": "{{base_url}}/api/users/{{user_id}}/progress/{{word_id}}",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "lessons", "{{lesson_id}}"]
+                            "path": ["api", "users", "{{user_id}}", "progress", "{{word_id}}"]
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"title\": \"Updated Lesson Title\",\n    \"sub_title\": \"Updated Subtitle\"\n}"
+                            "raw": "{\n    \"status\": \"learned\",\n    \"last_review\": \"2024-04-02 10:00:00\",\n    \"next_review\": \"2024-04-03 10:00:00\",\n    \"review_count\": 1\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "User Notes",
+            "item": [
+                {
+                    "name": "Get User Notes",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/{{user_id}}/notes",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users", "{{user_id}}", "notes"]
                         }
                     }
                 },
                 {
-                    "name": "Delete Lesson",
+                    "name": "Save User Note",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/users/{{user_id}}/notes/{{word_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "users", "{{user_id}}", "notes", "{{word_id}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"note\": \"This is a test note\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete User Note",
                     "request": {
                         "method": "DELETE",
                         "header": [
@@ -618,9 +702,9 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "raw": "{{base_url}}/api/users/{{user_id}}/notes/{{word_id}}",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "lessons", "{{lesson_id}}"]
+                            "path": ["api", "users", "{{user_id}}", "notes", "{{word_id}}"]
                         }
                     }
                 }

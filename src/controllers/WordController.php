@@ -1,17 +1,15 @@
 <?php
 namespace App\Controllers;
 
-use App\Config\Database;
-use App\Models\WordModel;
+use App\Services\WordService;
 use App\Middleware\AuthMiddleware;
 
 class WordController {
-    private $wordModel;
+    private $wordService;
     private $authMiddleware;
     
     public function __construct() {
-        $db = new Database();
-        $this->wordModel = new WordModel($db->connect());
+        $this->wordService = new WordService();
         $this->authMiddleware = new AuthMiddleware();
     }
     
@@ -27,10 +25,31 @@ class WordController {
         }
         
         try {
-            $words = $this->wordModel->getAll();
+            $words = $this->wordService->getAllWords();
             return ['words' => $words];
         } catch (\Exception $e) {
             error_log("GetAll Words Error: " . $e->getMessage());
+            http_response_code(500);
+            return ['error' => 'Không thể lấy danh sách words'];
+        }
+    }
+    
+    /**
+     * Lấy danh sách words với phân trang
+     */
+    public function getAllPaginated($page = 1, $limit = 10) {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            http_response_code(401);
+            return ['error' => 'Unauthorized'];
+        }
+        
+        try {
+            $result = $this->wordService->getAllWordsPaginated($page, $limit);
+            return $result;
+        } catch (\Exception $e) {
+            error_log("GetAll Paginated Words Error: " . $e->getMessage());
             http_response_code(500);
             return ['error' => 'Không thể lấy danh sách words'];
         }
@@ -48,23 +67,21 @@ class WordController {
         }
         
         try {
-            $word = $this->wordModel->getById($wordId);
-            
-            if (!$word) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy word'];
-            }
-            
+            $word = $this->wordService->getWordById($wordId);
             return ['word' => $word];
         } catch (\Exception $e) {
             error_log("GetById Word Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể lấy thông tin word'];
+            if ($e->getMessage() === 'Không tìm thấy word') {
+                http_response_code(404);
+            } else {
+                http_response_code(500);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
     /**
-     * Lấy words theo lesson_id
+     * Lấy words theo lesson ID
      */
     public function getByLessonId($lessonId) {
         // Xác thực người dùng
@@ -75,7 +92,7 @@ class WordController {
         }
         
         try {
-            $words = $this->wordModel->getByLessonId($lessonId);
+            $words = $this->wordService->getWordsByLessonId($lessonId);
             return ['words' => $words];
         } catch (\Exception $e) {
             error_log("GetByLessonId Words Error: " . $e->getMessage());
@@ -87,7 +104,7 @@ class WordController {
     /**
      * Tìm kiếm words
      */
-    public function search($data) {
+    public function search($keyword) {
         // Xác thực người dùng
         $auth = $this->authMiddleware->authenticate();
         if (!$auth) {
@@ -96,28 +113,12 @@ class WordController {
         }
         
         try {
-            $keyword = isset($data['keyword']) ? $data['keyword'] : '';
-            
-            if (empty($keyword)) {
-                http_response_code(400);
-                return ['error' => 'Từ khóa tìm kiếm là bắt buộc'];
-            }
-            
-            $words = $this->wordModel->search($keyword);
-            
-            if (empty($words)) {
-                // Không tìm thấy kết quả
-                return [
-                    'words' => [],
-                    'message' => 'Không tìm thấy từ vựng nào phù hợp với từ khóa "' . $keyword . '"'
-                ];
-            }
-            
+            $words = $this->wordService->searchWords($keyword);
             return ['words' => $words];
         } catch (\Exception $e) {
             error_log("Search Words Error: " . $e->getMessage());
             http_response_code(500);
-            return ['error' => 'Không thể tìm kiếm words: ' . $e->getMessage()];
+            return ['error' => 'Không thể tìm kiếm words'];
         }
     }
     
@@ -135,18 +136,11 @@ class WordController {
         // Kiểm tra dữ liệu đầu vào
         if (!isset($data['word']) || empty($data['word'])) {
             http_response_code(400);
-            return ['error' => 'Từ là bắt buộc'];
+            return ['error' => 'Word là bắt buộc'];
         }
-        
+
         try {
-            $wordId = $this->wordModel->create($data);
-            
-            if (!$wordId) {
-                http_response_code(400);
-                return ['error' => 'Không thể tạo word'];
-            }
-            
-            $word = $this->wordModel->getById($wordId);
+            $word = $this->wordService->createWord($data);
             
             http_response_code(201);
             return [
@@ -155,8 +149,9 @@ class WordController {
             ];
         } catch (\Exception $e) {
             error_log("Create Word Error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
-            return ['error' => 'Không thể tạo word'];
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -172,22 +167,7 @@ class WordController {
         }
         
         try {
-            // Kiểm tra word tồn tại
-            $word = $this->wordModel->getById($wordId);
-            if (!$word) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy word'];
-            }
-            
-            // Cập nhật thông tin
-            $updated = $this->wordModel->update($wordId, $data);
-            
-            if (!$updated) {
-                http_response_code(400);
-                return ['error' => 'Không thể cập nhật thông tin'];
-            }
-            
-            $word = $this->wordModel->getById($wordId);
+            $word = $this->wordService->updateWord($wordId, $data);
             
             return [
                 'message' => 'Cập nhật thông tin thành công',
@@ -195,8 +175,12 @@ class WordController {
             ];
         } catch (\Exception $e) {
             error_log("Update Word Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể cập nhật thông tin'];
+            if ($e->getMessage() === 'Không tìm thấy word') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
     
@@ -212,175 +196,55 @@ class WordController {
         }
         
         try {
-            // Kiểm tra word tồn tại
-            $word = $this->wordModel->getById($wordId);
-            if (!$word) {
-                http_response_code(404);
-                return ['error' => 'Không tìm thấy word'];
-            }
-            
-            // Xóa word
-            $deleted = $this->wordModel->delete($wordId);
-            
-            if (!$deleted) {
-                http_response_code(400);
-                return ['error' => 'Không thể xóa word'];
-            }
-            
+            $this->wordService->deleteWord($wordId);
             return ['message' => 'Xóa word thành công'];
         } catch (\Exception $e) {
             error_log("Delete Word Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể xóa word'];
+            if ($e->getMessage() === 'Không tìm thấy word') {
+                http_response_code(404);
+            } else {
+                http_response_code(400);
+            }
+            return ['error' => $e->getMessage()];
         }
     }
-    
+
     /**
-     * Lấy danh sách tất cả words với phân trang
+     * Import words từ JSON
      */
-    public function getAllPaginated($data) {
+    public function import() {
         // Xác thực người dùng
         $auth = $this->authMiddleware->authenticate();
         if (!$auth) {
             http_response_code(401);
             return ['error' => 'Unauthorized'];
         }
-        
-        try {
-            $page = isset($data['page']) ? (int)$data['page'] : 1;
-            $limit = isset($data['limit']) ? (int)$data['limit'] : 10;
-            
-            // Validate input
-            if ($page < 1) {
-                http_response_code(400);
-                return ['error' => 'Page must be greater than 0'];
-            }
-            
-            if ($limit < 1 || $limit > 100) {
-                http_response_code(400);
-                return ['error' => 'Limit must be between 1 and 100'];
-            }
-            
-            $result = $this->wordModel->getAllPaginated($page, $limit);
-            return $result;
-        } catch (\Exception $e) {
-            error_log("GetAllPaginated Words Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể lấy danh sách words'];
+
+        // Kiểm tra file upload
+        if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+            http_response_code(400);
+            return ['error' => 'Không tìm thấy file upload'];
         }
-    }
-    
-    /**
-     * Import words từ file JSON
-     */
-    public function importFromFile() {
-        // Xác thực người dùng
-        $auth = $this->authMiddleware->authenticate();
-        if (!$auth) {
-            http_response_code(401);
-            return ['error' => 'Unauthorized'];
-        }
-        
+
         try {
-            // Kiểm tra file upload
-            if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-                http_response_code(400);
-                return ['error' => 'No file uploaded or upload error'];
-            }
-            
-            // Kiểm tra file type
-            $fileType = strtolower(pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION));
-            if ($fileType !== 'json') {
-                http_response_code(400);
-                return ['error' => 'Only JSON files are allowed'];
-            }
-            
-            // Đọc nội dung file
-            $fileContent = file_get_contents($_FILES['file']['tmp_name']);
-            $jsonData = json_decode($fileContent, true);
-            
+            // Đọc nội dung file JSON
+            $jsonContent = file_get_contents($_FILES['file']['tmp_name']);
+            $data = json_decode($jsonContent, true);
+
             if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(400);
-                return ['error' => 'Invalid JSON file: ' . json_last_error_msg()];
+                throw new \Exception('Invalid JSON format');
             }
+
+            $result = $this->wordService->importWords($data);
             
-            // Xác định định dạng dữ liệu và chuẩn hóa
-            $wordsToImport = [];
-            
-            // Trường hợp 1: JSON là một mảng trực tiếp các từ vựng
-            if (is_array($jsonData) && isset($jsonData[0]) && isset($jsonData[0]['word'])) {
-                $wordsToImport = $jsonData;
-            }
-            // Trường hợp 2: JSON là một đối tượng có thuộc tính 'words'
-            else if (isset($jsonData['words']) && is_array($jsonData['words'])) {
-                $wordsToImport = $jsonData['words'];
-            }
-            // Không đúng định dạng
-            else {
-                http_response_code(400);
-                return ['error' => 'Invalid data format: JSON must be an array of words or have a "words" array property'];
-            }
-            
-            // Import dữ liệu
-            $result = $this->wordModel->importFromJson($wordsToImport);
-            
-            if ($result['success']) {
-                http_response_code(201);
-                return $result;
-            } else {
-                http_response_code(400);
-                return $result;
-            }
-        } catch (\Exception $e) {
-            error_log("Import Words From File Error: " . $e->getMessage());
-            http_response_code(500);
-            return ['error' => 'Không thể import words từ file'];
-        }
-    }
-    
-    /**
-     * Import words từ JSON data
-     */
-    public function import($data) {
-        // Xác thực người dùng
-        $auth = $this->authMiddleware->authenticate();
-        if (!$auth) {
-            http_response_code(401);
-            return ['error' => 'Unauthorized'];
-        }
-        
-        try {
-            // Kiểm tra dữ liệu đầu vào
-            $wordsToImport = [];
-            
-            // Trường hợp 1: Dữ liệu là một mảng trực tiếp các từ vựng
-            if (isset($data[0]) && isset($data[0]['word'])) {
-                $wordsToImport = $data;
-            }
-            // Trường hợp 2: Dữ liệu có thuộc tính 'words'
-            else if (isset($data['words']) && is_array($data['words'])) {
-                $wordsToImport = $data['words'];
-            }
-            // Không đúng định dạng
-            else {
-                http_response_code(400);
-                return ['error' => 'Invalid data format: JSON must be an array of words or have a "words" array property'];
-            }
-            
-            // Import dữ liệu
-            $result = $this->wordModel->importFromJson($wordsToImport);
-            
-            if ($result['success']) {
-                http_response_code(201);
-                return $result;
-            } else {
-                http_response_code(400);
-                return $result;
-            }
+            return [
+                'message' => 'Import thành công',
+                'result' => $result
+            ];
         } catch (\Exception $e) {
             error_log("Import Words Error: " . $e->getMessage());
             http_response_code(500);
-            return ['error' => 'Không thể import words'];
+            return ['error' => $e->getMessage()];
         }
     }
 } 

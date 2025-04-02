@@ -502,6 +502,129 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "Lessons",
+            "item": [
+                {
+                    "name": "Get All Lessons",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Lesson by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons", "{{lesson_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Lessons by Category ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/categories/{{category_id}}/lessons",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "categories", "{{category_id}}", "lessons"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Lesson",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Lesson Title\",\n    \"category_id\": \"{{category_id}}\",\n    \"sub_title\": \"Optional Subtitle\",\n    \"content\": \"# Markdown Content\\n\\nThis is a lesson content...\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Update Lesson",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons", "{{lesson_id}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Updated Lesson Title\",\n    \"sub_title\": \"Updated Subtitle\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Lesson",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/lessons/{{lesson_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "lessons", "{{lesson_id}}"]
+                        }
+                    }
+                }
+            ]
         }
     ]
 } 

@@ -52,21 +52,21 @@ class LessonModel extends Model {
      * Tạo lesson mới
      */
     public function create($data) {
-        return $this->insert($data);
+        return parent::create($data);
     }
     
     /**
      * Cập nhật lesson
      */
     public function update($id, $data) {
-        return $this->updateById($id, $data);
+        return parent::update($id, $data);
     }
     
     /**
      * Xóa lesson
      */
     public function delete($id) {
-        return $this->deleteById($id);
+        return parent::delete($id);
     }
     
     /**
@@ -78,5 +78,25 @@ class LessonModel extends Model {
         $stmt->bindValue(':id', $id);
         $stmt->bindValue(':order_index', $orderIndex);
         return $stmt->execute();
+    }
+    
+    /**
+     * Lấy order_index lớn nhất của một category
+     * 
+     * @param string $categoryId UUID của category
+     * @return int Order index lớn nhất
+     */
+    public function getMaxOrderIndex($categoryId) {
+        try {
+            $sql = "SELECT MAX(order_index) as max_order FROM {$this->table} WHERE category_id = :category_id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindValue(':category_id', $categoryId);
+            $stmt->execute();
+            $result = $stmt->fetch();
+            return $result['max_order'] ?? 0;
+        } catch (\PDOException $e) {
+            error_log("GetMaxOrderIndex Error: " . $e->getMessage());
+            return 0;
+        }
     }
 } 

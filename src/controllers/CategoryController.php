@@ -79,8 +79,16 @@ class CategoryController {
             http_response_code(400);
             return ['error' => 'Tiêu đề là bắt buộc'];
         }
+
+        if (!isset($data['total']) || !is_numeric($data['total'])) {
+            $data['total'] = 0; // Set default total to 0
+        }
         
         try {
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Creating category with data: " . json_encode($data));
+            }
+
             $categoryId = $this->categoryModel->create($data);
             
             if (!$categoryId) {
@@ -97,8 +105,9 @@ class CategoryController {
             ];
         } catch (\Exception $e) {
             error_log("Create Category Error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
-            return ['error' => 'Không thể tạo category'];
+            return ['error' => 'Không thể tạo category: ' . $e->getMessage()];
         }
     }
     

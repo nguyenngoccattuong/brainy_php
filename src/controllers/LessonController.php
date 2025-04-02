@@ -105,26 +105,84 @@ class LessonController {
             http_response_code(400);
             return ['error' => 'Category ID là bắt buộc'];
         }
+
+        if (!isset($data['content']) || empty($data['content'])) {
+            http_response_code(400);
+            return ['error' => 'File markdown là bắt buộc'];
+        }
         
         try {
+            // Kiểm tra category tồn tại
+            $db = new Database();
+            $categoryModel = new \App\Models\CategoryModel($db->connect());
+            $category = $categoryModel->getById($data['category_id']);
+            if (!$category) {
+                http_response_code(400);
+                return ['error' => 'Category không tồn tại'];
+            }
+
+            // Lấy order_index lớn nhất của category
+            $maxOrder = $this->lessonModel->getMaxOrderIndex($data['category_id']);
+            $data['order_index'] = $maxOrder + 1;
+
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Creating lesson with data: " . json_encode($data));
+            }
+            
+            // Tạo lesson trước để lấy ID
             $lessonId = $this->lessonModel->create($data);
             
             if (!$lessonId) {
+                if ($_ENV['DEBUG_MODE'] === 'true') {
+                    error_log("Failed to create lesson in database");
+                }
                 http_response_code(400);
                 return ['error' => 'Không thể tạo lesson'];
             }
+
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Lesson created with ID: " . $lessonId);
+            }
+
+            // Upload file markdown lên Cloudinary
+            $cloudinaryController = new CloudinaryController();
+            $uploadResult = $cloudinaryController->uploadLessonMarkdown([
+                'content' => $data['content'],
+                'lesson_id' => $lessonId
+            ]);
+
+            if (isset($uploadResult['error'])) {
+                // Nếu upload thất bại, xóa lesson đã tạo
+                $this->lessonModel->delete($lessonId);
+                if ($_ENV['DEBUG_MODE'] === 'true') {
+                    error_log("Failed to upload markdown: " . $uploadResult['error']);
+                }
+                http_response_code(400);
+                return ['error' => 'Không thể upload file markdown: ' . $uploadResult['error']];
+            }
+
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("Markdown uploaded successfully: " . json_encode($uploadResult));
+            }
+
+            // Cập nhật lesson với cloudinary_file_id
+            $this->lessonModel->update($lessonId, [
+                'cloudinary_file_id' => $uploadResult['file']['id']
+            ]);
             
             $lesson = $this->lessonModel->getById($lessonId);
             
             http_response_code(201);
             return [
                 'message' => 'Tạo lesson thành công',
-                'lesson' => $lesson
+                'lesson' => $lesson,
+                'markdown_file' => $uploadResult['file']
             ];
         } catch (\Exception $e) {
             error_log("Create Lesson Error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             http_response_code(500);
-            return ['error' => 'Không thể tạo lesson'];
+            return ['error' => 'Không thể tạo lesson: ' . $e->getMessage()];
         }
     }
     

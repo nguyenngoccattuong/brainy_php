@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Config\Database;
 use App\Services\AuthService;
+use App\Utils\Response;
 
 /**
  * Class AuthController
@@ -27,21 +28,18 @@ class AuthController {
         $requiredFields = ['username', 'email', 'password', 'full_name'];
         foreach ($requiredFields as $field) {
             if (!isset($data[$field]) || empty($data[$field])) {
-                http_response_code(400);
-                return ['error' => "Thiếu trường bắt buộc: {$field}"];
+                return Response::error("Thiếu trường bắt buộc: {$field}", 400);
             }
         }
         
         // Kiểm tra định dạng email
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            http_response_code(400);
-            return ['error' => 'Email không hợp lệ'];
+            return Response::error('Email không hợp lệ', 400);
         }
         
         // Kiểm tra độ dài mật khẩu
         if (strlen($data['password']) < 6) {
-            http_response_code(400);
-            return ['error' => 'Mật khẩu phải có ít nhất 6 ký tự'];
+            return Response::error('Mật khẩu phải có ít nhất 6 ký tự', 400);
         }
         
         try {
@@ -60,17 +58,9 @@ class AuthController {
             
             $result = $this->authService->register($userData);
             
-            http_response_code(201);
-            return [
-                'message' => 'Đăng ký thành công',
-                'user' => $result['user'],
-                'access_token' => $result['access_token'],
-                'refresh_token' => $result['refresh_token'],
-                'expires_in' => $result['expires_in']
-            ];
+            return Response::created($result, 'Đăng ký thành công');
         } catch (\Exception $e) {
-            http_response_code(400);
-            return ['error' => $e->getMessage()];
+            return Response::error($e->getMessage(), 400);
         }
     }
     
@@ -84,24 +74,17 @@ class AuthController {
         // Kiểm tra dữ liệu đầu vào
         if (!isset($data['username']) || empty($data['username']) || 
             !isset($data['password']) || empty($data['password'])) {
-            http_response_code(400);
-            return ['error' => 'Username/email và mật khẩu là bắt buộc'];
+            return Response::error('Username/email và mật khẩu là bắt buộc', 400);
         }
         
         try {
             // Xác thực người dùng với AuthService
             $result = $this->authService->login($data['username'], $data['password']);
             
-            return [
-                'message' => 'Đăng nhập thành công',
-                'user' => $result['user'],
-                'access_token' => $result['access_token'],
-                'refresh_token' => $result['refresh_token'],
-                'expires_in' => $result['expires_in']
-            ];
+            return Response::success($result, 'Đăng nhập thành công');
         } catch (\Exception $e) {
-            http_response_code($e->getMessage() === 'Username/email hoặc mật khẩu không chính xác' ? 401 : 500);
-            return ['error' => $e->getMessage()];
+            $code = $e->getMessage() === 'Username/email hoặc mật khẩu không chính xác' ? 401 : 500;
+            return Response::error($e->getMessage(), $code);
         }
     }
     
@@ -114,8 +97,7 @@ class AuthController {
     public function logout($data) {
         // Kiểm tra dữ liệu đầu vào
         if (!isset($data['refresh_token']) || empty($data['refresh_token'])) {
-            http_response_code(400);
-            return ['error' => 'Refresh token là bắt buộc'];
+            return Response::error('Refresh token là bắt buộc', 400);
         }
         
         try {
@@ -123,14 +105,12 @@ class AuthController {
             $result = $this->authService->logout($data['refresh_token']);
             
             if (!$result) {
-                http_response_code(400);
-                return ['error' => 'Không thể đăng xuất'];
+                return Response::error('Không thể đăng xuất', 400);
             }
             
-            return ['message' => 'Đăng xuất thành công'];
+            return Response::success(null, 'Đăng xuất thành công');
         } catch (\Exception $e) {
-            http_response_code(500);
-            return ['error' => $e->getMessage()];
+            return Response::serverError($e->getMessage());
         }
     }
     
@@ -147,14 +127,12 @@ class AuthController {
             $result = $this->authService->logoutAll($userId);
             
             if (!$result) {
-                http_response_code(400);
-                return ['error' => 'Không thể đăng xuất'];
+                return Response::error('Không thể đăng xuất', 400);
             }
             
-            return ['message' => 'Đăng xuất thành công khỏi tất cả thiết bị'];
+            return Response::success(null, 'Đăng xuất thành công khỏi tất cả thiết bị');
         } catch (\Exception $e) {
-            http_response_code(500);
-            return ['error' => $e->getMessage()];
+            return Response::serverError($e->getMessage());
         }
     }
     
@@ -167,23 +145,16 @@ class AuthController {
     public function refreshToken($data) {
         // Kiểm tra dữ liệu đầu vào
         if (!isset($data['refresh_token']) || empty($data['refresh_token'])) {
-            http_response_code(400);
-            return ['error' => 'Refresh token là bắt buộc'];
+            return Response::error('Refresh token là bắt buộc', 400);
         }
         
         try {
             // Refresh token với AuthService
             $result = $this->authService->refreshToken($data['refresh_token']);
             
-            return [
-                'message' => 'Refresh token thành công',
-                'access_token' => $result['access_token'],
-                'refresh_token' => $result['refresh_token'],
-                'expires_in' => $result['expires_in']
-            ];
+            return Response::success($result, 'Refresh token thành công');
         } catch (\Exception $e) {
-            http_response_code(401);
-            return ['error' => $e->getMessage()];
+            return Response::unauthorized($e->getMessage());
         }
     }
     
@@ -196,30 +167,30 @@ class AuthController {
     public function forgotPassword($data) {
         // Kiểm tra dữ liệu đầu vào
         if (!isset($data['email']) || empty($data['email'])) {
-            http_response_code(400);
-            return ['error' => 'Email là bắt buộc'];
+            return Response::error('Email là bắt buộc', 400);
         }
         
         // Kiểm tra định dạng email
         if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            http_response_code(400);
-            return ['error' => 'Email không hợp lệ'];
+            return Response::error('Email không hợp lệ', 400);
         }
         
         try {
             // Yêu cầu reset mật khẩu với AuthService
             $result = $this->authService->forgotPassword($data['email']);
             
-            return [
-                'message' => $result['message'],
-                // Trong môi trường phát triển, trả về token để test
-                // Trong môi trường production, không nên trả về token
-                'token' => $_ENV['DEBUG_MODE'] === 'true' ? $result['token'] : null,
-                'expires_at' => $_ENV['DEBUG_MODE'] === 'true' ? $result['expires_at'] : null
-            ];
+            $responseData = [];
+            // Trong môi trường phát triển, trả về token để test
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                $responseData = [
+                    'token' => $result['token'],
+                    'expires_at' => $result['expires_at']
+                ];
+            }
+            
+            return Response::success($responseData, $result['message']);
         } catch (\Exception $e) {
-            http_response_code(404);
-            return ['error' => $e->getMessage()];
+            return Response::notFound($e->getMessage());
         }
     }
     
@@ -235,13 +206,12 @@ class AuthController {
             // Xác thực token reset mật khẩu với AuthService
             $result = $this->authService->validateResetToken($token);
             
-            return [
+            return Response::success([
                 'valid' => $result['valid'],
                 'expires_at' => $result['expires_at']
-            ];
+            ]);
         } catch (\Exception $e) {
-            http_response_code(400);
-            return ['error' => $e->getMessage(), 'valid' => false];
+            return Response::error($e->getMessage(), 400, ['valid' => false]);
         }
     }
     
@@ -255,27 +225,25 @@ class AuthController {
     public function resetPassword($token, $data) {
         // Kiểm tra dữ liệu đầu vào
         if (!isset($data['password']) || empty($data['password'])) {
-            http_response_code(400);
-            return ['error' => 'Mật khẩu mới là bắt buộc'];
+            return Response::error('Mật khẩu mới là bắt buộc', 400);
         }
         
         // Kiểm tra độ dài mật khẩu
         if (strlen($data['password']) < 6) {
-            http_response_code(400);
-            return ['error' => 'Mật khẩu phải có ít nhất 6 ký tự'];
+            return Response::error('Mật khẩu phải có ít nhất 6 ký tự', 400);
         }
         
         try {
             // Reset mật khẩu với AuthService
             $result = $this->authService->resetPassword($token, $data['password']);
             
-            return [
-                'message' => $result['message'],
-                'user' => $result['user']
-            ];
+            if (!$result) {
+                return Response::error('Không thể đặt lại mật khẩu', 400);
+            }
+            
+            return Response::success(null, 'Đặt lại mật khẩu thành công');
         } catch (\Exception $e) {
-            http_response_code(400);
-            return ['error' => $e->getMessage()];
+            return Response::error($e->getMessage(), 400);
         }
     }
     
@@ -288,34 +256,29 @@ class AuthController {
      */
     public function changePassword($userId, $data) {
         // Kiểm tra dữ liệu đầu vào
-        if (!isset($data['current_password']) || empty($data['current_password']) ||
-            !isset($data['new_password']) || empty($data['new_password'])) {
-            http_response_code(400);
-            return ['error' => 'Mật khẩu hiện tại và mật khẩu mới là bắt buộc'];
+        $requiredFields = ['current_password', 'new_password'];
+        foreach ($requiredFields as $field) {
+            if (!isset($data[$field]) || empty($data[$field])) {
+                return Response::error("Thiếu trường bắt buộc: {$field}", 400);
+            }
         }
         
         // Kiểm tra độ dài mật khẩu mới
         if (strlen($data['new_password']) < 6) {
-            http_response_code(400);
-            return ['error' => 'Mật khẩu mới phải có ít nhất 6 ký tự'];
+            return Response::error('Mật khẩu mới phải có ít nhất 6 ký tự', 400);
         }
         
         try {
             // Thay đổi mật khẩu với AuthService
-            $result = $this->authService->changePassword(
-                $userId,
-                $data['current_password'],
-                $data['new_password']
-            );
+            $result = $this->authService->changePassword($userId, $data['current_password'], $data['new_password']);
             
-            return [
-                'message' => $result['message'],
-                'user' => $result['user']
-            ];
+            if (!$result) {
+                return Response::error('Không thể thay đổi mật khẩu', 400);
+            }
+            
+            return Response::success(null, 'Thay đổi mật khẩu thành công');
         } catch (\Exception $e) {
-            $code = $e->getMessage() === 'Mật khẩu hiện tại không chính xác' ? 401 : 400;
-            http_response_code($code);
-            return ['error' => $e->getMessage()];
+            return Response::error($e->getMessage(), 400);
         }
     }
 } 

@@ -43,6 +43,11 @@ abstract class Model {
             $uuid = $this->generateUUID();
             $data['id'] = $uuid;
             
+            // Thêm created_at và updated_at
+            $now = date('Y-m-d H:i:s');
+            $data['created_at'] = $now;
+            $data['updated_at'] = $now;
+            
             $fields = array_keys($data);
             $placeholders = array_map(function($field) {
                 return ":$field";
@@ -51,6 +56,11 @@ abstract class Model {
             $sql = "INSERT INTO {$this->table} (" . implode(', ', $fields) . ") 
                     VALUES (" . implode(', ', $placeholders) . ")";
                     
+            if ($_ENV['DEBUG_MODE'] === 'true') {
+                error_log("SQL: " . $sql);
+                error_log("Data: " . json_encode($data));
+            }
+            
             $stmt = $this->conn->prepare($sql);
             
             // Bind các giá trị
@@ -65,7 +75,7 @@ abstract class Model {
             return false;
         } catch (\PDOException $e) {
             error_log("Create Error: " . $e->getMessage());
-            return false;
+            throw new \Exception('Không thể tạo bản ghi: ' . $e->getMessage());
         }
     }
     

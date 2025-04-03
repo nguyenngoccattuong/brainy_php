@@ -578,10 +578,6 @@
                         "method": "POST",
                         "header": [
                             {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            },
-                            {
                                 "key": "Authorization",
                                 "value": "Bearer {{access_token}}"
                             }
@@ -592,9 +588,17 @@
                             "path": ["api", "words", "import"]
                         },
                         "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"words\": [\n        {\n            \"word\": \"test\",\n            \"pos\": \"noun\",\n            \"phonetic_text\": \"/test/\",\n            \"phonetic_am_text\": \"/test/\",\n            \"lesson_id\": \"{{lesson_id}}\",\n            \"senses\": [\n                {\n                    \"definition\": \"This is a test definition\",\n                    \"examples\": [\n                        {\n                            \"x\": \"This is a test example\",\n                            \"cf\": \"This is a test translation\"\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}"
-                        }
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": "/path/to/words.json",
+                                    "description": "JSON file containing an array of word objects"
+                                }
+                            ]
+                        },
+                        "description": "Import words from a JSON file. The JSON file should contain an array of word objects with their senses and examples."
                     }
                 }
             ]

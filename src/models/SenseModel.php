@@ -53,7 +53,12 @@ class SenseModel extends Model {
      * Tạo sense mới
      */
     public function create($data) {
-        return parent::create($data);
+        // Create a copy of the data without examples field to avoid SQL issues
+        $senseData = $data;
+        if (isset($senseData['examples'])) {
+            unset($senseData['examples']);
+        }
+        return parent::create($senseData);
     }
     
     /**

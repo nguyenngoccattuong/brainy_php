@@ -29,7 +29,7 @@ class AuthService {
      * Đăng ký người dùng mới
      * 
      * @param array $data Dữ liệu đăng ký
-     * @return array Thông tin người dùng và tokens
+     * @return array Thông tin người dùng
      */
     public function register($data) {
         // Kiểm tra xem username đã tồn tại chưa
@@ -53,17 +53,8 @@ class AuthService {
         $user = $this->userModel->getById($userId);
         unset($user['password']);
         
-        // Tạo JWT token
-        $accessToken = $this->generateAccessToken($user);
-        
-        // Tạo refresh token
-        $refreshTokenData = $this->refreshTokenModel->createToken($userId);
-        
         return [
-            'user' => $user,
-            'access_token' => $accessToken,
-            'refresh_token' => $refreshTokenData['token'],
-            'expires_in' => 3600 // Access token expires in 1 hour
+            'user' => $user
         ];
     }
     

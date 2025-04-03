@@ -69,10 +69,19 @@ class WordService {
             error_log("Creating word with data: " . json_encode($data));
         }
 
+        // Create a copy of the data without senses field to avoid SQL issues
+        $wordData = $data;
+        if (isset($wordData['senses'])) {
+            $senses = $wordData['senses'];
+            unset($wordData['senses']);
+        } else {
+            $senses = [];
+        }
+
         // Xử lý upload audio nếu có
-        if (isset($data['audio']) && !empty($data['audio'])) {
+        if (isset($wordData['audio']) && !empty($wordData['audio'])) {
             $uploadResult = $this->cloudinaryController->upload([
-                'file' => $data['audio'],
+                'file' => $wordData['audio'],
                 'owner_type' => 'Word',
                 'owner_id' => 'temp'
             ]);
@@ -81,13 +90,13 @@ class WordService {
                 throw new \Exception('Không thể upload audio: ' . $uploadResult['error']);
             }
 
-            $data['audio_id'] = $uploadResult['file']['id'];
+            $wordData['audio_id'] = $uploadResult['file']['id'];
         }
 
         // Xử lý upload image nếu có
-        if (isset($data['image']) && !empty($data['image'])) {
+        if (isset($wordData['image']) && !empty($wordData['image'])) {
             $uploadResult = $this->cloudinaryController->upload([
-                'file' => $data['image'],
+                'file' => $wordData['image'],
                 'owner_type' => 'Word',
                 'owner_id' => 'temp'
             ]);
@@ -96,32 +105,32 @@ class WordService {
                 throw new \Exception('Không thể upload image: ' . $uploadResult['error']);
             }
 
-            $data['image_id'] = $uploadResult['file']['id'];
+            $wordData['image_id'] = $uploadResult['file']['id'];
         }
 
         // Tạo word
-        $wordId = $this->wordModel->create($data);
+        $wordId = $this->wordModel->create($wordData);
         if (!$wordId) {
             throw new \Exception('Không thể tạo word');
         }
 
         // Cập nhật owner_id cho các file đã upload
-        if (isset($data['audio_id'])) {
+        if (isset($wordData['audio_id'])) {
             $this->cloudinaryController->upload([
-                'file_id' => $data['audio_id'],
+                'file_id' => $wordData['audio_id'],
                 'owner_id' => $wordId
             ]);
         }
-        if (isset($data['image_id'])) {
+        if (isset($wordData['image_id'])) {
             $this->cloudinaryController->upload([
-                'file_id' => $data['image_id'],
+                'file_id' => $wordData['image_id'],
                 'owner_id' => $wordId
             ]);
         }
 
         // Tạo senses và examples nếu có
-        if (isset($data['senses']) && is_array($data['senses'])) {
-            foreach ($data['senses'] as $senseData) {
+        if (!empty($senses) && is_array($senses)) {
+            foreach ($senses as $senseData) {
                 $senseData['word_id'] = $wordId;
                 $senseId = $this->senseModel->create($senseData);
 

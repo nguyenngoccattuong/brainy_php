@@ -1,7 +1,8 @@
-CREATE DATABASE IF NOT EXISTS brainy;
+-- 1. Tạo database
+CREATE DATABASE IF NOT EXISTS brainy CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE brainy;
 
--- Bảng users với UUID
+-- 2. Tạo bảng users (bảng cơ sở)
 CREATE TABLE users (
     id CHAR(36) PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -12,9 +13,9 @@ CREATE TABLE users (
     status ENUM('active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng cloudinary_files
+-- 3. Tạo bảng cloudinary_files
 CREATE TABLE cloudinary_files (
     id CHAR(36) PRIMARY KEY,
     owner_id CHAR(36) NOT NULL,
@@ -27,36 +28,37 @@ CREATE TABLE cloudinary_files (
     status ENUM('active', 'deleted') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng categories
+-- 4. Tạo bảng categories
 CREATE TABLE categories (
     id CHAR(36) PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    description TEXT NULL,
+    description TEXT,
+    status VARCHAR(50) DEFAULT 'active',
+    order_index INT DEFAULT 0,
     progress INT DEFAULT 0,
-    total INT NOT NULL,
-    image_id CHAR(36) NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (image_id) REFERENCES cloudinary_files(id) ON DELETE SET NULL
-);
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng lessons
+-- 5. Tạo bảng lessons
 CREATE TABLE lessons (
     id CHAR(36) PRIMARY KEY,
     category_id CHAR(36) NOT NULL,
     title VARCHAR(255) NOT NULL,
-    sub_title VARCHAR(255) NULL,
+    description TEXT,
+    content TEXT,
     cloudinary_file_id CHAR(36) NULL,
-    order_index INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'active',
+    order_index INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
     FOREIGN KEY (cloudinary_file_id) REFERENCES cloudinary_files(id) ON DELETE SET NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng words (với UUID)
+-- 6. Tạo bảng words
 CREATE TABLE words (
     id CHAR(36) PRIMARY KEY,
     lesson_id CHAR(36) NULL,
@@ -73,9 +75,9 @@ CREATE TABLE words (
     FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE SET NULL,
     FOREIGN KEY (audio_id) REFERENCES cloudinary_files(id) ON DELETE SET NULL,
     FOREIGN KEY (image_id) REFERENCES cloudinary_files(id) ON DELETE SET NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng senses
+-- 7. Tạo bảng senses
 CREATE TABLE senses (
     id CHAR(36) PRIMARY KEY,
     word_id CHAR(36) NOT NULL,
@@ -83,9 +85,9 @@ CREATE TABLE senses (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng examples
+-- 8. Tạo bảng examples
 CREATE TABLE examples (
     id CHAR(36) PRIMARY KEY,
     sense_id CHAR(36) NOT NULL,
@@ -94,9 +96,9 @@ CREATE TABLE examples (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (sense_id) REFERENCES senses(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng user_progress
+-- 9. Tạo bảng user_progress
 CREATE TABLE user_progress (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -109,9 +111,9 @@ CREATE TABLE user_progress (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng user_notes
+-- 10. Tạo bảng user_notes
 CREATE TABLE user_notes (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -121,8 +123,9 @@ CREATE TABLE user_notes (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 11. Tạo bảng password_resets
 CREATE TABLE password_resets (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -131,9 +134,9 @@ CREATE TABLE password_resets (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Bảng refresh_tokens
+-- 12. Tạo bảng refresh_tokens
 CREATE TABLE refresh_tokens (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -142,10 +145,9 @@ CREATE TABLE refresh_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
--- Tạo indexes
+-- 13. Tạo các indexes
 CREATE INDEX idx_word ON words(word);
 CREATE INDEX idx_user_progress ON user_progress(user_id, word_id);
 CREATE INDEX idx_user_notes ON user_notes(user_id, word_id);
@@ -153,10 +155,9 @@ CREATE INDEX idx_cloudinary_owner ON cloudinary_files(owner_id, owner_type);
 CREATE INDEX idx_lesson_category ON lessons(category_id);
 CREATE INDEX idx_word_lesson ON words(lesson_id);
 
--- Thêm trigger để tự động tạo UUID khi insert vào các bảng
+-- 14. Tạo triggers cho UUID
 DELIMITER //
 
--- Trigger cho users
 CREATE TRIGGER before_insert_users
 BEFORE INSERT ON users
 FOR EACH ROW
@@ -166,7 +167,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho cloudinary_files
 CREATE TRIGGER before_insert_cloudinary_files
 BEFORE INSERT ON cloudinary_files
 FOR EACH ROW
@@ -176,7 +176,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho categories
 CREATE TRIGGER before_insert_categories
 BEFORE INSERT ON categories
 FOR EACH ROW
@@ -186,7 +185,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho lessons
 CREATE TRIGGER before_insert_lessons
 BEFORE INSERT ON lessons
 FOR EACH ROW
@@ -196,7 +194,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho words
 CREATE TRIGGER before_insert_words
 BEFORE INSERT ON words
 FOR EACH ROW
@@ -206,7 +203,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho senses
 CREATE TRIGGER before_insert_senses
 BEFORE INSERT ON senses
 FOR EACH ROW
@@ -216,7 +212,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho examples
 CREATE TRIGGER before_insert_examples
 BEFORE INSERT ON examples
 FOR EACH ROW
@@ -226,7 +221,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho user_progress
 CREATE TRIGGER before_insert_user_progress
 BEFORE INSERT ON user_progress
 FOR EACH ROW
@@ -236,7 +230,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho user_notes
 CREATE TRIGGER before_insert_user_notes
 BEFORE INSERT ON user_notes
 FOR EACH ROW
@@ -246,7 +239,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho password_resets
 CREATE TRIGGER before_insert_password_resets
 BEFORE INSERT ON password_resets
 FOR EACH ROW
@@ -256,7 +248,6 @@ BEGIN
     END IF;
 END //
 
--- Trigger cho refresh_tokens
 CREATE TRIGGER before_insert_refresh_tokens
 BEFORE INSERT ON refresh_tokens
 FOR EACH ROW
@@ -266,4 +257,4 @@ BEGIN
     END IF;
 END //
 
-DELIMITER ; 
+DELIMITER ;

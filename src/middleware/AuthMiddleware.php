@@ -3,6 +3,7 @@ namespace App\Middleware;
 
 use App\Config\Database;
 use App\Services\AuthService;
+use App\Utils\Response;
 
 /**
  * Class AuthMiddleware

@@ -802,6 +802,10 @@
                         "method": "POST",
                         "header": [
                             {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
                                 "key": "Authorization",
                                 "value": "Bearer {{access_token}}"
                             }
@@ -812,17 +816,36 @@
                             "path": ["api", "words", "import"]
                         },
                         "body": {
+                            "mode": "raw",
+                            "raw": "[\n  {\n    \"word\": \"a\",\n    \"pos\": \"indefinite article\",\n    \"phonetic\": \"https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/a/a__/a__gb/a__gb_2.mp3\",\n    \"phonetic_text\": \"/ə/\",\n    \"phonetic_am\": \"https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/a__/a__us/a__us_2_rr.mp3\",\n    \"phonetic_am_text\": \"/ə/\",\n    \"senses\": [\n      {\n        \"definition\": \"used before countable or singular nouns referring to people or things that have not already been mentioned\",\n        \"examples\": [\n          {\n            \"cf\": \"\",\n            \"x\": \"a man/horse/unit\"\n          },\n          {\n            \"cf\": \"\",\n            \"x\": \"an aunt/egg/hour/X-ray\"\n          }\n        ]\n      }\n    ]\n  }\n]"
+                        }
+                    }
+                },
+                {
+                    "name": "Import Words From File",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/import-file",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "import-file"]
+                        },
+                        "body": {
                             "mode": "formdata",
                             "formdata": [
                                 {
                                     "key": "file",
                                     "type": "file",
-                                    "src": "/path/to/words.json",
-                                    "description": "JSON file containing an array of word objects"
+                                    "src": "/path/to/your/words.json"
                                 }
                             ]
-                        },
-                        "description": "Import words from a JSON file. The JSON file should contain an array of word objects with their senses and examples."
+                        }
                     }
                 }
             ]

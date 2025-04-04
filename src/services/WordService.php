@@ -239,23 +239,92 @@ class WordService {
         try {
             $imported = 0;
             $errors = [];
+            $result = [];
 
             foreach ($jsonData as $wordData) {
                 try {
-                    $this->createWord($wordData);
+                    // Kiểm tra dữ liệu bắt buộc
+                    if (!isset($wordData['word']) || empty($wordData['word'])) {
+                        $errors[] = "Word is required";
+                        continue;
+                    }
+                    
+                    // Chuẩn bị dữ liệu cho word
+                    $newWordData = [
+                        'word' => $wordData['word'],
+                        'pos' => $wordData['pos'] ?? null,
+                        'phonetic' => $wordData['phonetic'] ?? null,
+                        'phonetic_text' => $wordData['phonetic_text'] ?? null,
+                        'phonetic_am' => $wordData['phonetic_am'] ?? null,
+                        'phonetic_am_text' => $wordData['phonetic_am_text'] ?? null
+                    ];
+                    
+                    // Tạo word mới
+                    $wordId = $this->wordModel->create($newWordData);
+                    
+                    if (!$wordId) {
+                        $errors[] = "Failed to create word: {$wordData['word']}";
+                        continue;
+                    }
+                    
+                    // Xử lý senses nếu có
+                    if (isset($wordData['senses']) && is_array($wordData['senses'])) {
+                        foreach ($wordData['senses'] as $senseData) {
+                            if (!isset($senseData['definition']) || empty($senseData['definition'])) {
+                                $errors[] = "Definition is required for word: {$wordData['word']}";
+                                continue;
+                            }
+                            
+                            // Tạo sense mới
+                            $senseId = $this->senseModel->create([
+                                'word_id' => $wordId,
+                                'definition' => $senseData['definition']
+                            ]);
+                            
+                            if (!$senseId) {
+                                $errors[] = "Failed to create sense for word: {$wordData['word']}";
+                                continue;
+                            }
+                            
+                            // Xử lý examples nếu có
+                            if (isset($senseData['examples']) && is_array($senseData['examples'])) {
+                                foreach ($senseData['examples'] as $exampleData) {
+                                    if (!isset($exampleData['x']) || empty($exampleData['x'])) {
+                                        $errors[] = "Example text is required for word: {$wordData['word']}";
+                                        continue;
+                                    }
+                                    
+                                    // Tạo example mới
+                                    $exampleId = $this->exampleModel->create([
+                                        'sense_id' => $senseId,
+                                        'cf' => $exampleData['cf'] ?? '',
+                                        'x' => $exampleData['x']
+                                    ]);
+                                    
+                                    if (!$exampleId) {
+                                        $errors[] = "Failed to create example for word: {$wordData['word']}";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
                     $imported++;
+                    $result[] = $this->getWordById($wordId);
                 } catch (\Exception $e) {
                     $errors[] = "Error importing word '{$wordData['word']}': " . $e->getMessage();
                 }
             }
 
             return [
-                'success' => empty($errors),
+                'success' => $imported > 0,
                 'imported' => $imported,
-                'errors' => $errors
+                'errors' => $errors,
+                'words' => $result
             ];
         } catch (\Exception $e) {
-            throw new \Exception('Import failed: ' . $e->getMessage());
+            error_log("Import Words Error: " . $e->getMessage());
+            throw $e;
         }
     }
 } 

@@ -220,6 +220,46 @@ class WordController {
             return ['error' => 'Unauthorized'];
         }
 
+        // Kiểm tra có dữ liệu được gửi lên không
+        $inputJSON = file_get_contents('php://input');
+        $data = json_decode($inputJSON, true);
+        
+        // Nếu không có dữ liệu JSON trực tiếp
+        if ($data === null) {
+            http_response_code(400);
+            return ['error' => 'Không tìm thấy dữ liệu JSON hợp lệ'];
+        }
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            http_response_code(400);
+            return ['error' => 'Invalid JSON format: ' . json_last_error_msg()];
+        }
+
+        try {
+            $result = $this->wordService->importWords($data);
+            
+            return [
+                'message' => 'Import thành công',
+                'result' => $result
+            ];
+        } catch (\Exception $e) {
+            error_log("Import Words Error: " . $e->getMessage());
+            http_response_code(500);
+            return ['error' => $e->getMessage()];
+        }
+    }
+    
+    /**
+     * Import words từ file JSON upload
+     */
+    public function importFromFile() {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            http_response_code(401);
+            return ['error' => 'Unauthorized'];
+        }
+
         // Kiểm tra file upload
         if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
             http_response_code(400);
@@ -232,7 +272,8 @@ class WordController {
             $data = json_decode($jsonContent, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Invalid JSON format');
+                http_response_code(400);
+                return ['error' => 'Invalid JSON format: ' . json_last_error_msg()];
             }
 
             $result = $this->wordService->importWords($data);

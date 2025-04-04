@@ -45,6 +45,7 @@ class WordModel extends Model {
      * Lấy danh sách tất cả words
      */
     public function getAll() {
+        // Lấy danh sách các từ
         $sql = "SELECT w.*, 
                 cf_audio.file_url as audio_url,
                 cf_image.file_url as image_url,
@@ -56,13 +57,32 @@ class WordModel extends Model {
                 ORDER BY w.created_at DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
-        return $stmt->fetchAll();
+        $words = $stmt->fetchAll();
+        
+        // Lấy thêm senses và examples cho mỗi từ
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        foreach ($words as &$word) {
+            // Lấy senses
+            $senses = $senseModel->getByWordId($word['id']);
+            
+            // Lấy examples cho mỗi sense
+            foreach ($senses as &$sense) {
+                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+            }
+            
+            $word['senses'] = $senses;
+        }
+        
+        return $words;
     }
     
     /**
      * Lấy word theo ID
      */
     public function getById($id) {
+        // Lấy thông tin từ
         $sql = "SELECT w.*, 
                 cf_audio.file_url as audio_url,
                 cf_image.file_url as image_url,
@@ -75,13 +95,34 @@ class WordModel extends Model {
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':id', $id);
         $stmt->execute();
-        return $stmt->fetch();
+        $word = $stmt->fetch();
+        
+        if (!$word) {
+            return false;
+        }
+        
+        // Lấy senses và examples
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        // Lấy senses
+        $senses = $senseModel->getByWordId($word['id']);
+        
+        // Lấy examples cho mỗi sense
+        foreach ($senses as &$sense) {
+            $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+        }
+        
+        $word['senses'] = $senses;
+        
+        return $word;
     }
     
     /**
      * Lấy words theo lesson_id
      */
     public function getByLessonId($lessonId) {
+        // Lấy danh sách từ theo lesson
         $sql = "SELECT w.*, 
                 cf_audio.file_url as audio_url,
                 cf_image.file_url as image_url
@@ -93,7 +134,25 @@ class WordModel extends Model {
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':lesson_id', $lessonId);
         $stmt->execute();
-        return $stmt->fetchAll();
+        $words = $stmt->fetchAll();
+        
+        // Lấy thêm senses và examples cho mỗi từ
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        foreach ($words as &$word) {
+            // Lấy senses
+            $senses = $senseModel->getByWordId($word['id']);
+            
+            // Lấy examples cho mỗi sense
+            foreach ($senses as &$sense) {
+                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+            }
+            
+            $word['senses'] = $senses;
+        }
+        
+        return $words;
     }
     
     /**
@@ -103,6 +162,7 @@ class WordModel extends Model {
         // Chuẩn bị từ khóa tìm kiếm với LIKE
         $likeKeyword = "%{$keyword}%";
         
+        // Tìm kiếm các từ phù hợp
         $sql = "SELECT w.*, 
                 cf_audio.file_url as audio_url,
                 cf_image.file_url as image_url,
@@ -137,7 +197,25 @@ class WordModel extends Model {
         $stmt->bindValue(':start_keyword', $keyword . '%');
         $stmt->execute();
         
-        return $stmt->fetchAll();
+        $words = $stmt->fetchAll();
+        
+        // Lấy thêm senses và examples cho mỗi từ
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        foreach ($words as &$word) {
+            // Lấy senses
+            $senses = $senseModel->getByWordId($word['id']);
+            
+            // Lấy examples cho mỗi sense
+            foreach ($senses as &$sense) {
+                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+            }
+            
+            $word['senses'] = $senses;
+        }
+        
+        return $words;
     }
     
     /**

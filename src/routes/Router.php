@@ -38,6 +38,16 @@ class Router {
         $this->addRoute('PUT', '/api/users/([a-f0-9-]+)', 'UserController', 'update');
         $this->addRoute('DELETE', '/api/users/([a-f0-9-]+)', 'UserController', 'delete');
         
+        // USER PROGRESS ROUTES
+        $this->addRoute('GET', '/api/users/([a-f0-9-]+)/progress', 'UserController', 'getProgress');
+        $this->addRoute('PUT', '/api/users/([a-f0-9-]+)/progress/([a-f0-9-]+)', 'UserController', 'updateProgress');
+        $this->addRoute('DELETE', '/api/users/([a-f0-9-]+)/progress/([a-f0-9-]+)', 'UserController', 'deleteProgress');
+        
+        // USER NOTES ROUTES
+        $this->addRoute('GET', '/api/users/([a-f0-9-]+)/notes', 'UserController', 'getNotes');
+        $this->addRoute('POST', '/api/users/([a-f0-9-]+)/notes/([a-f0-9-]+)', 'UserController', 'saveNote');
+        $this->addRoute('DELETE', '/api/users/([a-f0-9-]+)/notes/([a-f0-9-]+)', 'UserController', 'deleteNote');
+        
         // CATEGORY ROUTES
         $this->addRoute('GET', '/api/categories', 'CategoryController', 'getAll');
         $this->addRoute('GET', '/api/categories/([a-f0-9-]+)', 'CategoryController', 'getById');

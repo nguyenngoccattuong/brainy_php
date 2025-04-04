@@ -67,15 +67,37 @@ class UserProgressModel extends Model {
     }
     
     /**
-     * Xóa tiến độ
+     * Xóa tiến độ theo userId và wordId
+     * 
+     * @param string $userId UUID của người dùng
+     * @param string $wordId UUID của từ vựng
+     * @return bool
      */
-    public function delete($userId, $wordId) {
+    public function deleteProgress($userId, $wordId) {
         $sql = "DELETE FROM {$this->table} 
                 WHERE user_id = :user_id AND word_id = :word_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':user_id', $userId);
         $stmt->bindValue(':word_id', $wordId);
         return $stmt->execute();
+    }
+    
+    /**
+     * Xóa bản ghi
+     * Override method từ Model class
+     * 
+     * @param string $id UUID của bản ghi
+     * @return bool
+     */
+    public function delete($id) {
+        try {
+            $sql = "DELETE FROM {$this->table} WHERE id = ?";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([$id]);
+        } catch (\PDOException $e) {
+            error_log("Delete Error: " . $e->getMessage());
+            return false;
+        }
     }
     
     /**

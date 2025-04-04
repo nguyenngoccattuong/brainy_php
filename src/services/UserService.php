@@ -185,6 +185,13 @@ class UserService {
     public function updateUserProgress($userId, $wordId, $data) {
         return $this->userProgressModel->updateProgress($userId, $wordId, $data);
     }
+    
+    /**
+     * Xóa tiến độ học
+     */
+    public function deleteUserProgress($userId, $wordId) {
+        return $this->userProgressModel->deleteProgress($userId, $wordId);
+    }
 
     /**
      * Lấy ghi chú của user

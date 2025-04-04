@@ -174,6 +174,25 @@ class UserController {
     }
 
     /**
+     * Xóa tiến độ học của user
+     */
+    public function deleteProgress($userId, $wordId) {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            return Response::unauthorized();
+        }
+        
+        try {
+            $this->userService->deleteUserProgress($userId, $wordId);
+            return Response::success(null, 'Xóa tiến độ học thành công');
+        } catch (\Exception $e) {
+            error_log("Delete User Progress Error: " . $e->getMessage());
+            return Response::serverError('Không thể xóa tiến độ học');
+        }
+    }
+
+    /**
      * Lấy ghi chú của user
      */
     public function getNotes($userId) {

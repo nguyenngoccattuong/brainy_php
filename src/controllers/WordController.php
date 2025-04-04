@@ -104,12 +104,19 @@ class WordController {
     /**
      * Tìm kiếm words
      */
-    public function search($keyword) {
+    public function search() {
         // Xác thực người dùng
         $auth = $this->authMiddleware->authenticate();
         if (!$auth) {
             http_response_code(401);
             return ['error' => 'Unauthorized'];
+        }
+        
+        // Lấy từ khóa tìm kiếm từ query parameters
+        $keyword = $_GET['keyword'] ?? '';
+        
+        if (empty($keyword)) {
+            return ['error' => 'Không thể tìm kiếm words'];
         }
         
         try {

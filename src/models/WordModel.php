@@ -162,58 +162,53 @@ class WordModel extends Model {
         // Chuẩn bị từ khóa tìm kiếm với LIKE
         $likeKeyword = "%{$keyword}%";
         
-        // Tìm kiếm các từ phù hợp
-        $sql = "SELECT w.*, 
-                cf_audio.file_url as audio_url,
-                cf_image.file_url as image_url,
-                l.title as lesson_title
+        // Tìm kiếm từ vựng chỉ trong trường word
+        $sql = "SELECT DISTINCT w.id 
                 FROM {$this->table} w 
-                LEFT JOIN cloudinary_files cf_audio ON w.audio_id = cf_audio.id 
-                LEFT JOIN cloudinary_files cf_image ON w.image_id = cf_image.id 
-                LEFT JOIN lessons l ON w.lesson_id = l.id 
-                LEFT JOIN senses s ON w.id = s.word_id 
-                LEFT JOIN examples e ON s.id = e.sense_id 
-                WHERE w.word LIKE :word_like 
-                OR w.pos LIKE :pos_like 
-                OR w.phonetic_text LIKE :phonetic_like 
-                OR s.definition LIKE :def_like 
-                OR e.x LIKE :example_like 
-                GROUP BY w.id
-                ORDER BY 
-                    CASE 
-                        WHEN w.word = :exact_keyword THEN 1
-                        WHEN w.word LIKE :start_keyword THEN 2
-                        ELSE 3
-                    END,
-                    w.word ASC";
+                WHERE w.word LIKE :word_like";
                     
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':word_like', $likeKeyword);
-        $stmt->bindValue(':pos_like', $likeKeyword);
-        $stmt->bindValue(':phonetic_like', $likeKeyword);
-        $stmt->bindValue(':def_like', $likeKeyword);
-        $stmt->bindValue(':example_like', $likeKeyword);
-        $stmt->bindValue(':exact_keyword', $keyword);
-        $stmt->bindValue(':start_keyword', $keyword . '%');
         $stmt->execute();
         
-        $words = $stmt->fetchAll();
+        $wordIds = $stmt->fetchAll(\PDO::FETCH_COLUMN, 0);
         
-        // Lấy thêm senses và examples cho mỗi từ
-        $senseModel = new SenseModel($this->conn);
-        $exampleModel = new ExampleModel($this->conn);
+        if (empty($wordIds)) {
+            return [];
+        }
         
-        foreach ($words as &$word) {
-            // Lấy senses
-            $senses = $senseModel->getByWordId($word['id']);
-            
-            // Lấy examples cho mỗi sense
-            foreach ($senses as &$sense) {
-                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+        // Tạo danh sách từ vựng đầy đủ từ các ID tìm được
+        $words = [];
+        foreach ($wordIds as $wordId) {
+            $word = $this->getById($wordId);
+            if ($word) {
+                $words[] = $word;
+            }
+        }
+        
+        // Sắp xếp kết quả sau khi đã lấy đầy đủ thông tin
+        usort($words, function($a, $b) use ($keyword) {
+            // Ưu tiên đúng từ khóa
+            if ($a['word'] === $keyword && $b['word'] !== $keyword) {
+                return -1;
+            }
+            if ($a['word'] !== $keyword && $b['word'] === $keyword) {
+                return 1;
             }
             
-            $word['senses'] = $senses;
-        }
+            // Ưu tiên từ bắt đầu bằng từ khóa
+            $aStartsWith = strpos($a['word'], $keyword) === 0;
+            $bStartsWith = strpos($b['word'], $keyword) === 0;
+            if ($aStartsWith && !$bStartsWith) {
+                return -1;
+            }
+            if (!$aStartsWith && $bStartsWith) {
+                return 1;
+            }
+            
+            // Sắp xếp theo bảng chữ cái
+            return strcmp($a['word'], $b['word']);
+        });
         
         return $words;
     }

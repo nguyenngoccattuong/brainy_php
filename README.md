@@ -24,9 +24,9 @@ cd brainy_php
 composer install
 ```
 
-3. Tạo file .env từ .env.example:
+3. Tạo file .env:
 ```
-cp .env.example .env
+cp .env
 ```
 
 4. Cấu hình trong file .env:

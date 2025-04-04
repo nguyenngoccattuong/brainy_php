@@ -1,6 +1,6 @@
 {
     "name": "brainy/api",
-    "description": "Brainy Vocabulary Learning API",
+    "description": "Brainy English Learning API",
     "type": "project",
     "require": {
         "php": ">=7.4",

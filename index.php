@@ -1,8 +1,6 @@
 <?php
 /**
- * Brainy API - Điểm khởi đầu ứng dụng
- * 
- * File này nhận tất cả các request và điều hướng đến router
+ * Brainy API 
  */
 
 // Hiển thị tất cả lỗi trong chế độ dev

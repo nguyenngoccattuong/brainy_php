@@ -14,10 +14,17 @@ class CategoryService {
     
     /**
      * Lấy danh sách tất cả categories
+     * 
+     * @param bool $withLessons Có bao gồm lessons trong kết quả hay không
+     * @return array Danh sách các categories
      */
-    public function getAllCategories() {
+    public function getAllCategories($withLessons = false) {
         try {
-            return $this->categoryModel->getAll();
+            if ($withLessons) {
+                return $this->categoryModel->getAllWithLessons();
+            } else {
+                return $this->categoryModel->getAll();
+            }
         } catch (\Exception $e) {
             error_log("GetAllCategories Error: " . $e->getMessage());
             throw new \Exception('Không thể lấy danh sách categories');
@@ -26,10 +33,18 @@ class CategoryService {
     
     /**
      * Lấy category theo ID
+     * 
+     * @param string $id ID của category
+     * @param bool $withLessons Có bao gồm lessons trong kết quả hay không
+     * @return array Thông tin của category
      */
-    public function getCategoryById($id) {
+    public function getCategoryById($id, $withLessons = false) {
         try {
-            $category = $this->categoryModel->getById($id);
+            if ($withLessons) {
+                $category = $this->categoryModel->getByIdWithLessons($id);
+            } else {
+                $category = $this->categoryModel->getById($id);
+            }
             
             if (!$category) {
                 throw new \Exception('Không tìm thấy category');

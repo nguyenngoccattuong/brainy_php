@@ -25,7 +25,10 @@ class CategoryController {
         }
         
         try {
-            $categories = $this->categoryService->getAllCategories();
+            // Get the withLessons parameter from query string, defaults to true
+            $withLessons = isset($_GET['with_lessons']) ? filter_var($_GET['with_lessons'], FILTER_VALIDATE_BOOLEAN) : true;
+            
+            $categories = $this->categoryService->getAllCategories($withLessons);
             return Response::success(['categories' => $categories], 'Lấy danh sách categories thành công');
         } catch (\Exception $e) {
             error_log("GetAll Categories Error: " . $e->getMessage());
@@ -44,7 +47,10 @@ class CategoryController {
         }
         
         try {
-            $category = $this->categoryService->getCategoryById($categoryId);
+            // Get the withLessons parameter from query string, defaults to true
+            $withLessons = isset($_GET['with_lessons']) ? filter_var($_GET['with_lessons'], FILTER_VALIDATE_BOOLEAN) : true;
+            
+            $category = $this->categoryService->getCategoryById($categoryId, $withLessons);
             return Response::success(['category' => $category], 'Lấy thông tin category thành công');
         } catch (\Exception $e) {
             error_log("GetById Category Error: " . $e->getMessage());

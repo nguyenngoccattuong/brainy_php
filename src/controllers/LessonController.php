@@ -90,24 +90,60 @@ class LessonController {
             return ['error' => 'Unauthorized'];
         }
         
+        // Khi nhận data từ form-data
+        $title = isset($data['title']) ? $data['title'] : (isset($_POST['title']) ? $_POST['title'] : null);
+        $categoryId = isset($data['category_id']) ? $data['category_id'] : (isset($_POST['category_id']) ? $_POST['category_id'] : null);
+        $description = isset($data['description']) ? $data['description'] : (isset($_POST['description']) ? $_POST['description'] : null);
+        $status = isset($data['status']) ? $data['status'] : (isset($_POST['status']) ? $_POST['status'] : 'active');
+        
         // Kiểm tra dữ liệu đầu vào
-        if (!isset($data['title']) || empty($data['title'])) {
+        if (!$title) {
             http_response_code(400);
             return ['error' => 'Tiêu đề là bắt buộc'];
         }
         
-        if (!isset($data['category_id']) || empty($data['category_id'])) {
+        if (!$categoryId) {
             http_response_code(400);
             return ['error' => 'Category ID là bắt buộc'];
         }
-
-        if (!isset($data['content']) || empty($data['content'])) {
+        
+        // Kiểm tra và đọc file markdown từ request
+        $markdownContent = null;
+        
+        // Kiểm tra xem có file md được upload không
+        if (isset($_FILES['markdown_file']) && $_FILES['markdown_file']['error'] === UPLOAD_ERR_OK) {
+            // Đọc nội dung file markdown
+            $markdownContent = file_get_contents($_FILES['markdown_file']['tmp_name']);
+        } 
+        // Kiểm tra xem content có được gửi dưới dạng field không
+        else if (isset($data['content']) && !empty($data['content'])) {
+            $markdownContent = $data['content'];
+        }
+        // Kiểm tra từ form data
+        else if (isset($_POST['content']) && !empty($_POST['content'])) {
+            $markdownContent = $_POST['content'];
+        }
+        
+        if (!$markdownContent) {
             http_response_code(400);
-            return ['error' => 'File markdown là bắt buộc'];
+            return ['error' => 'Nội dung markdown là bắt buộc (gửi dưới dạng file "markdown_file" hoặc field "content")'];
+        }
+        
+        // Chuẩn bị dữ liệu để tạo lesson
+        $lessonData = [
+            'title' => $title,
+            'category_id' => $categoryId,
+            'description' => $description,
+            'status' => $status,
+            'content' => $markdownContent
+        ];
+        
+        if ($_ENV['DEBUG_MODE'] === 'true') {
+            error_log("Lesson data prepared: " . json_encode(array_keys($lessonData)));
         }
         
         try {
-            $result = $this->lessonService->createLesson($data);
+            $result = $this->lessonService->createLesson($lessonData);
             
             http_response_code(201);
             return [

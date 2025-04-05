@@ -938,6 +938,120 @@ Api được xây dựng theo chuẩn RESTful, với các endpoint được đ�
 
 ### Endpoints được hỗ trợ
 
+## Category API
+
+### Get All Categories
+
+Lấy danh sách tất cả danh mục kèm theo bài học của mỗi danh mục. Mặc định sẽ trả về cả bài học, có thể tắt bằng cách truyền tham số `with_lessons=false`.
+
+- **URL:** `/api/categories`
+- **Method:** `GET`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+```
+with_lessons: true/false (mặc định: true) - Có lấy danh sách bài học cho mỗi danh mục hay không
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "success": true,
+  "message": "Lấy danh sách categories thành công",
+  "data": {
+    "categories": [
+      {
+        "id": "uuid",
+        "title": "Basic English",
+        "description": "Learn basic English vocabulary",
+        "status": "active",
+        "order_index": 1,
+        "progress": 10,
+        "created_at": "datetime",
+        "updated_at": "datetime",
+        "lessons": [
+          {
+            "id": "uuid",
+            "category_id": "uuid",
+            "title": "Lesson 1: Introduction",
+            "description": "Introduction to basic vocabulary",
+            "status": "active",
+            "order_index": 1,
+            "cloudinary_file_id": "uuid",
+            "created_at": "datetime",
+            "updated_at": "datetime",
+            "image_url": "https://res.cloudinary.com/..."
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### Get Category By ID
+
+Lấy thông tin của một danh mục cụ thể kèm theo bài học. Mặc định sẽ trả về cả bài học, có thể tắt bằng cách truyền tham số `with_lessons=false`.
+
+- **URL:** `/api/categories/:id`
+- **Method:** `GET`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+```
+with_lessons: true/false (mặc định: true) - Có lấy danh sách bài học cho danh mục hay không
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "success": true,
+  "message": "Lấy thông tin category thành công",
+  "data": {
+    "category": {
+      "id": "uuid",
+      "title": "Basic English",
+      "description": "Learn basic English vocabulary",
+      "status": "active",
+      "order_index": 1,
+      "progress": 10,
+      "created_at": "datetime",
+      "updated_at": "datetime",
+      "lessons": [
+        {
+          "id": "uuid",
+          "category_id": "uuid",
+          "title": "Lesson 1: Introduction",
+          "description": "Introduction to basic vocabulary",
+          "status": "active",
+          "order_index": 1,
+          "cloudinary_file_id": "uuid",
+          "created_at": "datetime",
+          "updated_at": "datetime",
+          "image_url": "https://res.cloudinary.com/..."
+        }
+      ]
+    }
+  }
+}
+```
+
 ## Learn API
 
 ### Get All Learn Status
@@ -1242,50 +1356,60 @@ Authorization: Bearer {token}
 
 ## Upload API
 
-// ... existing code ...
+### Create Lesson
 
-### Create Learn Status
+Tạo bài học mới với tùy chọn upload file markdown.
 
-Tạo mới trạng thái học cho một từ
-
-- **URL:** `/api/users/:userId/learn`
+- **URL:** `/api/lessons`
 - **Method:** `POST`
 - **Auth Required:** Yes
-- **Permissions Required:** User hoặc Admin
+- **Permissions Required:** User
 
 **Headers:**
 ```
 Authorization: Bearer {token}
-Content-Type: application/json
 ```
 
-**Request Body:**
-```json
-{
-  "word_id": "uuid-of-word",
-  "status": "learning" // Có thể là "learning", "learned" hoặc "skip"
-}
-```
+**Body:** Form-data
+
+| Key | Type | Description |
+|-----|------|-------------|
+| title | text | Tiêu đề bài học (bắt buộc) |
+| category_id | text | ID của danh mục (bắt buộc) |
+| description | text | Mô tả bài học (tùy chọn) |
+| status | text | Trạng thái: active, inactive, draft (mặc định: active) |
+| order_index | text | Thứ tự hiển thị (tùy chọn) |
+| markdown_file | file | File markdown (bắt buộc nếu không có trường content) |
+| content | text | Nội dung markdown (bắt buộc nếu không có file markdown_file) |
 
 **Success Response:**
 ```json
 {
-  "status": "success",
-  "code": 201,
-  "success": true,
-  "message": "Tạo trạng thái học thành công",
-  "data": {
-    "learn": {
-      "id": "uuid",
-      "user_id": "uuid",
-      "word_id": "uuid",
-      "status": "learning",
-      "created_at": "datetime",
-      "updated_at": "datetime",
-      "word": "example",
-      "pos": "n",
-      "phonetic_text": "/ɪɡˈzɑːmpl/"
-    }
+  "message": "Tạo lesson thành công",
+  "lesson": {
+    "id": "uuid",
+    "title": "Learn Vocabulary - Beginning",
+    "category_id": "uuid",
+    "description": "Basic vocabulary lesson for beginners",
+    "status": "active",
+    "order_index": 1,
+    "cloudinary_file_id": "uuid",
+    "image_url": "https://res.cloudinary.com/...",
+    "created_at": "datetime",
+    "updated_at": "datetime",
+    "category_title": "Category Name"
+  },
+  "markdown_file": {
+    "id": "uuid",
+    "owner_id": "uuid",
+    "owner_type": "Lesson",
+    "file_type": "document",
+    "file_url": "https://res.cloudinary.com/...",
+    "public_id": "brainy/Lesson/uuid/filename",
+    "format": "md",
+    "status": "active",
+    "created_at": "datetime",
+    "updated_at": "datetime"
   }
 }
 ```
@@ -1293,11 +1417,22 @@ Content-Type: application/json
 **Error Response:**
 ```json
 {
-  "status": "error",
-  "code": 400,
-  "success": false,
-  "message": "Word ID không hợp lệ"
+  "error": "Tiêu đề là bắt buộc"
 }
 ```
 
-// ... existing code ... 
+hoặc
+
+```json
+{
+  "error": "Category ID là bắt buộc"
+}
+```
+
+hoặc
+
+```json
+{
+  "error": "Nội dung markdown là bắt buộc (gửi dưới dạng file 'markdown_file' hoặc field 'content')"
+}
+``` 

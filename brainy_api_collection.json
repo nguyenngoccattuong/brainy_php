@@ -400,7 +400,7 @@
             "name": "Categories",
             "item": [
                 {
-                    "name": "Get All Categories",
+                    "name": "Get All Categories (with lessons)",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -410,14 +410,22 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/categories",
+                            "raw": "{{base_url}}/api/categories?with_lessons=true",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "categories"]
-                        }
+                            "path": ["api", "categories"],
+                            "query": [
+                                {
+                                    "key": "with_lessons",
+                                    "value": "true",
+                                    "description": "Bao gồm danh sách bài học của mỗi danh mục"
+                                }
+                            ]
+                        },
+                        "description": "Lấy danh sách tất cả danh mục kèm theo bài học của mỗi danh mục"
                     }
                 },
                 {
-                    "name": "Get Category by ID",
+                    "name": "Get All Categories (without lessons)",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -427,10 +435,68 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/api/categories/{{category_id}}",
+                            "raw": "{{base_url}}/api/categories?with_lessons=false",
                             "host": ["{{base_url}}"],
-                            "path": ["api", "categories", "{{category_id}}"]
-                        }
+                            "path": ["api", "categories"],
+                            "query": [
+                                {
+                                    "key": "with_lessons",
+                                    "value": "false",
+                                    "description": "Không bao gồm danh sách bài học của mỗi danh mục"
+                                }
+                            ]
+                        },
+                        "description": "Lấy danh sách tất cả danh mục không kèm theo bài học"
+                    }
+                },
+                {
+                    "name": "Get Category by ID (with lessons)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/categories/{{category_id}}?with_lessons=true",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "categories", "{{category_id}}"],
+                            "query": [
+                                {
+                                    "key": "with_lessons",
+                                    "value": "true",
+                                    "description": "Bao gồm danh sách bài học của danh mục"
+                                }
+                            ]
+                        },
+                        "description": "Lấy thông tin của một danh mục cụ thể kèm theo danh sách bài học"
+                    }
+                },
+                {
+                    "name": "Get Category by ID (without lessons)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/categories/{{category_id}}?with_lessons=false",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "categories", "{{category_id}}"],
+                            "query": [
+                                {
+                                    "key": "with_lessons",
+                                    "value": "false",
+                                    "description": "Không bao gồm danh sách bài học của danh mục"
+                                }
+                            ]
+                        },
+                        "description": "Lấy thông tin của một danh mục cụ thể không kèm theo danh sách bài học"
                     }
                 },
                 {
@@ -557,14 +623,10 @@
                     }
                 },
                 {
-                    "name": "Create Lesson",
+                    "name": "Create Lesson (with File Upload)",
                     "request": {
                         "method": "POST",
                         "header": [
-                            {
-                                "key": "Content-Type",
-                                "value": "application/json"
-                            },
                             {
                                 "key": "Authorization",
                                 "value": "Bearer {{access_token}}"
@@ -576,8 +638,34 @@
                             "path": ["api", "lessons"]
                         },
                         "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"title\": \"Test Lesson\",\n    \"category_id\": \"{{category_id}}\",\n    \"content\": \"# Lesson Content\\n\\nThis is a test lesson content.\",\n    \"status\": \"active\",\n    \"order_index\": 1\n}"
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "title",
+                                    "value": "Learn Vocabulary - Beginning",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "category_id",
+                                    "value": "{{category_id}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "description",
+                                    "value": "Basic vocabulary lesson for beginners",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "status",
+                                    "value": "active",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "markdown_file",
+                                    "type": "file",
+                                    "src": "/path/to/your/lesson.md"
+                                }
+                            ]
                         }
                     }
                 },

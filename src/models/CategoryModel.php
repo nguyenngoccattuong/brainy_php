@@ -15,6 +15,33 @@ class CategoryModel extends Model {
     }
     
     /**
+     * Lấy danh sách tất cả categories kèm theo lessons
+     */
+    public function getAllWithLessons() {
+        // First, get all categories
+        $categories = $this->getAll();
+        
+        if (empty($categories)) {
+            return [];
+        }
+        
+        // For each category, fetch its lessons
+        foreach ($categories as &$category) {
+            $sql = "SELECT l.*, cf.file_url as image_url 
+                    FROM lessons l 
+                    LEFT JOIN cloudinary_files cf ON l.cloudinary_file_id = cf.id 
+                    WHERE l.category_id = :category_id 
+                    ORDER BY l.order_index ASC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindValue(':category_id', $category['id']);
+            $stmt->execute();
+            $category['lessons'] = $stmt->fetchAll();
+        }
+        
+        return $categories;
+    }
+    
+    /**
      * Lấy category theo ID
      */
     public function getById($id) {
@@ -23,6 +50,31 @@ class CategoryModel extends Model {
         $stmt->bindValue(':id', $id);
         $stmt->execute();
         return $stmt->fetch();
+    }
+    
+    /**
+     * Lấy category theo ID kèm theo lessons
+     */
+    public function getByIdWithLessons($id) {
+        // Get the category
+        $category = $this->getById($id);
+        
+        if (!$category) {
+            return null;
+        }
+        
+        // Fetch lessons for this category
+        $sql = "SELECT l.*, cf.file_url as image_url 
+                FROM lessons l 
+                LEFT JOIN cloudinary_files cf ON l.cloudinary_file_id = cf.id 
+                WHERE l.category_id = :category_id 
+                ORDER BY l.order_index ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':category_id', $id);
+        $stmt->execute();
+        $category['lessons'] = $stmt->fetchAll();
+        
+        return $category;
     }
     
     /**

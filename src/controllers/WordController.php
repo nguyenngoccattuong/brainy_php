@@ -43,6 +43,25 @@ class WordController {
             return Response::unauthorized();
         }
         
+        // Đảm bảo $page và $limit là số nguyên
+        if (is_array($page)) {
+            // Nếu nhận được array (từ query params), lấy tham số "page" nếu có
+            $page = isset($page['page']) ? (int)$page['page'] : 1;
+        } else {
+            $page = (int)$page;
+        }
+        
+        if (is_array($limit)) {
+            // Nếu nhận được array, lấy tham số "limit" nếu có
+            $limit = isset($limit['limit']) ? (int)$limit['limit'] : 10;
+        } else {
+            $limit = (int)$limit;
+        }
+        
+        // Kiểm tra và đặt giá trị mặc định nếu không hợp lệ
+        $page = ($page < 1) ? 1 : $page;
+        $limit = ($limit < 1 || $limit > 100) ? 10 : $limit;
+        
         try {
             $result = $this->wordService->getAllWordsPaginated($page, $limit);
             return Response::success($result);

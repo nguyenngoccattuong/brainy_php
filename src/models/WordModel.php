@@ -31,9 +31,26 @@ class WordModel extends Model {
         $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
+        $words = $stmt->fetchAll();
+        
+        // Lấy thêm senses và examples cho mỗi từ
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        foreach ($words as &$word) {
+            // Lấy senses
+            $senses = $senseModel->getByWordId($word['id']);
+            
+            // Lấy examples cho mỗi sense
+            foreach ($senses as &$sense) {
+                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+            }
+            
+            $word['senses'] = $senses;
+        }
         
         return [
-            'data' => $stmt->fetchAll(),
+            'items' => $words,
             'total' => $total,
             'page' => $page,
             'limit' => $limit,

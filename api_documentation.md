@@ -923,4 +923,381 @@ POST /api/words/import-file
     "success": false,
     "message": "Lỗi server"
 }
-``` 
+```
+
+## Tài liệu API
+
+### Mô tả chung
+
+Api được xây dựng theo chuẩn RESTful, với các endpoint được định nghĩa với HTTP method tương ứng.
+
+- Các endpoint đều trả về dữ liệu dưới dạng JSON.
+- Các endpoint cần xác thực sẽ yêu cầu `Authorization` header với giá trị là `Bearer <access_token>`.
+- Các endpoint lấy danh sách có hỗ trợ phân trang với các tham số `page` và `limit`.
+- Mã lỗi HTTP trả về tuân theo chuẩn.
+
+### Endpoints được hỗ trợ
+
+## Learn API
+
+### Get All Learn Status
+
+Lấy tất cả trạng thái học của người dùng hiện tại
+
+- **URL:** `/api/learn`
+- **Method:** `GET`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+```
+page: Số trang (mặc định: 1)
+limit: Số lượng kết quả mỗi trang (mặc định: 10)
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "success": true,
+  "message": "Lấy danh sách trạng thái học thành công",
+  "data": {
+    "learn": {
+      "items": [
+        {
+          "id": "uuid",
+          "user_id": "uuid",
+          "word_id": "uuid",
+          "status": "learning",
+          "created_at": "datetime",
+          "updated_at": "datetime",
+          "word": "example",
+          "pos": "n",
+          "phonetic_text": "/ɪɡˈzɑːmpl/",
+          "audio_url": "https://res.cloudinary.com/...",
+          "image_url": "https://res.cloudinary.com/..."
+        }
+      ],
+      "total": 10,
+      "page": 1,
+      "limit": 10,
+      "total_pages": 1
+    }
+  }
+}
+```
+
+### Get Learn Status By Status
+
+Lấy trạng thái học lọc theo status
+
+- **URL:** `/api/learn/status`
+- **Method:** `GET`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters:**
+```
+status: Trạng thái học (learning, learned, skip)
+page: Số trang (mặc định: 1)
+limit: Số lượng kết quả mỗi trang (mặc định: 10)
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "success": true,
+  "message": "Lấy danh sách trạng thái học thành công",
+  "data": {
+    "learn": {
+      "items": [
+        {
+          "id": "uuid",
+          "user_id": "uuid",
+          "word_id": "uuid",
+          "status": "learning",
+          "created_at": "datetime",
+          "updated_at": "datetime",
+          "word": "example",
+          "pos": "n",
+          "phonetic_text": "/ɪɡˈzɑːmpl/",
+          "audio_url": "https://res.cloudinary.com/...",
+          "image_url": "https://res.cloudinary.com/..."
+        }
+      ],
+      "total": 5,
+      "page": 1,
+      "limit": 10,
+      "total_pages": 1
+    }
+  }
+}
+```
+
+### Get Learn Status of Word
+
+Lấy trạng thái học của một từ cụ thể
+
+- **URL:** `/api/learn/:wordId`
+- **Method:** `GET`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "success": true,
+  "message": "Lấy trạng thái học thành công",
+  "data": {
+    "learn": {
+      "id": "uuid",
+      "user_id": "uuid",
+      "word_id": "uuid",
+      "status": "learning",
+      "created_at": "datetime",
+      "updated_at": "datetime",
+      "word": "example",
+      "pos": "n",
+      "phonetic_text": "/ɪɡˈzɑːmpl/"
+    }
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "code": 404,
+  "success": false,
+  "message": "Không tìm thấy thông tin học từ này"
+}
+```
+
+### Create Learn Status
+
+Tạo mới trạng thái học cho một từ
+
+- **URL:** `/api/learn`
+- **Method:** `POST`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "word_id": "uuid-of-word",
+  "status": "learning" // Có thể là "learning", "learned" hoặc "skip"
+}
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 201,
+  "success": true,
+  "message": "Tạo trạng thái học thành công",
+  "data": {
+    "learn": {
+      "id": "uuid",
+      "user_id": "uuid",
+      "word_id": "uuid",
+      "status": "learning",
+      "created_at": "datetime",
+      "updated_at": "datetime",
+      "word": "example",
+      "pos": "n",
+      "phonetic_text": "/ɪɡˈzɑːmpl/"
+    }
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "code": 400,
+  "success": false,
+  "message": "Word ID không hợp lệ"
+}
+```
+
+### Update Learn Status
+
+Cập nhật trạng thái học của một từ
+
+- **URL:** `/api/learn/:wordId`
+- **Method:** `PUT`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "status": "learned" // Có thể là "learning", "learned" hoặc "skip"
+}
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "success": true,
+  "message": "Cập nhật trạng thái học thành công",
+  "data": {
+    "learn": {
+      "id": "uuid",
+      "user_id": "uuid",
+      "word_id": "uuid",
+      "status": "learned",
+      "created_at": "datetime",
+      "updated_at": "datetime",
+      "word": "example",
+      "pos": "n",
+      "phonetic_text": "/ɪɡˈzɑːmpl/"
+    }
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "code": 400,
+  "success": false,
+  "message": "Status không hợp lệ"
+}
+```
+
+### Delete Learn Status
+
+Xóa trạng thái học của một từ
+
+- **URL:** `/api/learn/:wordId`
+- **Method:** `DELETE`
+- **Auth Required:** Yes
+- **Permissions Required:** User
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 200,
+  "success": true,
+  "message": "Xóa trạng thái học thành công",
+  "data": null
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "code": 404,
+  "success": false,
+  "message": "Không tìm thấy thông tin học từ này"
+}
+```
+
+## Upload API
+
+// ... existing code ...
+
+### Create Learn Status
+
+Tạo mới trạng thái học cho một từ
+
+- **URL:** `/api/users/:userId/learn`
+- **Method:** `POST`
+- **Auth Required:** Yes
+- **Permissions Required:** User hoặc Admin
+
+**Headers:**
+```
+Authorization: Bearer {token}
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "word_id": "uuid-of-word",
+  "status": "learning" // Có thể là "learning", "learned" hoặc "skip"
+}
+```
+
+**Success Response:**
+```json
+{
+  "status": "success",
+  "code": 201,
+  "success": true,
+  "message": "Tạo trạng thái học thành công",
+  "data": {
+    "learn": {
+      "id": "uuid",
+      "user_id": "uuid",
+      "word_id": "uuid",
+      "status": "learning",
+      "created_at": "datetime",
+      "updated_at": "datetime",
+      "word": "example",
+      "pos": "n",
+      "phonetic_text": "/ɪɡˈzɑːmpl/"
+    }
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "status": "error",
+  "code": 400,
+  "success": false,
+  "message": "Word ID không hợp lệ"
+}
+```
+
+// ... existing code ... 

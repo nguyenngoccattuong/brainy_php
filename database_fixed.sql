@@ -113,7 +113,20 @@ CREATE TABLE user_progress (
     FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 10. Tạo bảng user_notes
+-- 10. Tạo bảng learn
+CREATE TABLE learn (
+    id CHAR(36) PRIMARY KEY,
+    user_id CHAR(36) NOT NULL,
+    word_id CHAR(36) NOT NULL,
+    status ENUM('skip', 'learned', 'learning') DEFAULT 'learning',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_word (user_id, word_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 11. Tạo bảng user_notes
 CREATE TABLE user_notes (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -125,7 +138,7 @@ CREATE TABLE user_notes (
     FOREIGN KEY (word_id) REFERENCES words(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 11. Tạo bảng password_resets
+-- 12. Tạo bảng password_resets
 CREATE TABLE password_resets (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -136,7 +149,7 @@ CREATE TABLE password_resets (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 12. Tạo bảng refresh_tokens
+-- 13. Tạo bảng refresh_tokens
 CREATE TABLE refresh_tokens (
     id CHAR(36) PRIMARY KEY,
     user_id CHAR(36) NOT NULL,
@@ -147,15 +160,16 @@ CREATE TABLE refresh_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 13. Tạo các indexes
+-- 14. Tạo các indexes
 CREATE INDEX idx_word ON words(word);
 CREATE INDEX idx_user_progress ON user_progress(user_id, word_id);
 CREATE INDEX idx_user_notes ON user_notes(user_id, word_id);
 CREATE INDEX idx_cloudinary_owner ON cloudinary_files(owner_id, owner_type);
 CREATE INDEX idx_lesson_category ON lessons(category_id);
 CREATE INDEX idx_word_lesson ON words(lesson_id);
+CREATE INDEX idx_learn ON learn(user_id, status);
 
--- 14. Tạo triggers cho UUID
+-- 15. Tạo triggers cho UUID
 DELIMITER //
 
 CREATE TRIGGER before_insert_users
@@ -250,6 +264,15 @@ END //
 
 CREATE TRIGGER before_insert_refresh_tokens
 BEFORE INSERT ON refresh_tokens
+FOR EACH ROW
+BEGIN
+    IF NEW.id IS NULL THEN
+        SET NEW.id = UUID();
+    END IF;
+END //
+
+CREATE TRIGGER before_insert_learn
+BEFORE INSERT ON learn
 FOR EACH ROW
 BEGIN
     IF NEW.id IS NULL THEN

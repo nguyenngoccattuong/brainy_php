@@ -327,4 +327,14 @@ class WordService {
             throw $e;
         }
     }
+
+    /**
+     * Lấy danh sách từ vựng ngẫu nhiên
+     * 
+     * @param int $limit Số lượng từ cần lấy
+     * @return array Danh sách từ vựng ngẫu nhiên
+     */
+    public function getRandomWords($limit = 5) {
+        return $this->wordModel->getRandomWords($limit);
+    }
 } 

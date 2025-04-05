@@ -273,4 +273,31 @@ class WordController {
             return Response::serverError($e->getMessage());
         }
     }
+
+    /**
+     * Lấy danh sách words ngẫu nhiên
+     */
+    public function getRandom() {
+        // Xác thực người dùng
+        $auth = $this->authMiddleware->authenticate();
+        if (!$auth) {
+            return Response::unauthorized();
+        }
+        
+        // Lấy tham số limit từ query parameters, mặc định là 5
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 5;
+        
+        try {
+            $words = $this->wordService->getRandomWords($limit);
+            
+            if (empty($words)) {
+                return Response::success(['words' => []], 'Không có từ vựng nào');
+            }
+            
+            return Response::success(['words' => $words], 'Lấy danh sách từ vựng ngẫu nhiên thành công');
+        } catch (\Exception $e) {
+            error_log("GetRandom Words Error: " . $e->getMessage());
+            return Response::serverError('Không thể lấy danh sách từ vựng ngẫu nhiên');
+        }
+    }
 } 

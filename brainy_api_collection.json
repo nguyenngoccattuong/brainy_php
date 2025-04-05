@@ -847,6 +847,178 @@
                             ]
                         }
                     }
+                },
+                {
+                    "name": "Get Random Words",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/words/random?limit=3",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "words", "random"],
+                            "query": [
+                                {
+                                    "key": "limit",
+                                    "value": "3",
+                                    "description": "Number of random words to return"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Learn",
+            "item": [
+                {
+                    "name": "Get All Learn Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/learn?page=1&limit=10",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "learn"],
+                            "query": [
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Learn Status By Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/learn/status?status=learning&page=1&limit=10",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "learn", "status"],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "learning",
+                                    "description": "Can be 'learning', 'learned', or 'skip'"
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "limit",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Learn Status of Word",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/learn/{{word_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "learn", "{{word_id}}"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Learn Status",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/learn",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "learn"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"word_id\": \"{{word_id}}\",\n    \"status\": \"learning\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Update Learn Status",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/learn/{{word_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "learn", "{{word_id}}"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"status\": \"learned\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Learn Status",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{access_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/api/learn/{{word_id}}",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "learn", "{{word_id}}"]
+                        }
+                    }
                 }
             ]
         }

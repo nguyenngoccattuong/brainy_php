@@ -67,6 +67,7 @@ class Router {
         $this->addRoute('GET', '/api/words', 'WordController', 'getAll');
         $this->addRoute('GET', '/api/words/paginated', 'WordController', 'getAllPaginated');
         $this->addRoute('GET', '/api/words/search', 'WordController', 'search');
+        $this->addRoute('GET', '/api/words/random', 'WordController', 'getRandom');
         $this->addRoute('GET', '/api/words/([a-f0-9-]+)', 'WordController', 'getById');
         $this->addRoute('GET', '/api/lessons/([a-f0-9-]+)/words', 'WordController', 'getByLessonId');
         $this->addRoute('POST', '/api/words', 'WordController', 'create');
@@ -74,6 +75,14 @@ class Router {
         $this->addRoute('POST', '/api/words/import-file', 'WordController', 'importFromFile');
         $this->addRoute('PUT', '/api/words/([a-f0-9-]+)', 'WordController', 'update');
         $this->addRoute('DELETE', '/api/words/([a-f0-9-]+)', 'WordController', 'delete');
+        
+        // LEARN ROUTES
+        $this->addRoute('GET', '/api/learn', 'LearnController', 'getAll');
+        $this->addRoute('GET', '/api/learn/status', 'LearnController', 'getByStatus');
+        $this->addRoute('GET', '/api/learn/([a-f0-9-]+)', 'LearnController', 'getByWordId');
+        $this->addRoute('POST', '/api/learn', 'LearnController', 'create');
+        $this->addRoute('PUT', '/api/learn/([a-f0-9-]+)', 'LearnController', 'update');
+        $this->addRoute('DELETE', '/api/learn/([a-f0-9-]+)', 'LearnController', 'delete');
         
         // CLOUDINARY ROUTES
         $this->addRoute('POST', '/api/upload', 'CloudinaryController', 'upload');

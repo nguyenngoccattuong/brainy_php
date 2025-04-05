@@ -357,4 +357,52 @@ class WordModel extends Model {
             ];
         }
     }
+    
+    /**
+     * Lấy danh sách words ngẫu nhiên theo số lượng giới hạn
+     * 
+     * @param int $limit Số lượng từ cần lấy
+     * @return array Danh sách từ vựng ngẫu nhiên
+     */
+    public function getRandomWords($limit = 5) {
+        // Giới hạn số lượng từ vựng tối đa
+        $limit = min(abs((int)$limit), 50);
+        if ($limit <= 0) {
+            $limit = 5; // Mặc định lấy 5 từ nếu limit không hợp lệ
+        }
+        
+        // Lấy danh sách từ ngẫu nhiên
+        $sql = "SELECT w.*, 
+                cf_audio.file_url as audio_url,
+                cf_image.file_url as image_url,
+                l.title as lesson_title
+                FROM {$this->table} w 
+                LEFT JOIN cloudinary_files cf_audio ON w.audio_id = cf_audio.id 
+                LEFT JOIN cloudinary_files cf_image ON w.image_id = cf_image.id 
+                LEFT JOIN lessons l ON w.lesson_id = l.id 
+                ORDER BY RAND() 
+                LIMIT :limit";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+        $words = $stmt->fetchAll();
+        
+        // Lấy thêm senses và examples cho mỗi từ
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        foreach ($words as &$word) {
+            // Lấy senses
+            $senses = $senseModel->getByWordId($word['id']);
+            
+            // Lấy examples cho mỗi sense
+            foreach ($senses as &$sense) {
+                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+            }
+            
+            $word['senses'] = $senses;
+        }
+        
+        return $words;
+    }
 } 

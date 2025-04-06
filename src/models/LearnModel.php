@@ -21,7 +21,7 @@ class LearnModel extends Model {
         $total = $stmt->fetch()['total'];
         
         // Lấy dữ liệu theo trang
-        $sql = "SELECT l.*, w.word, w.pos, w.phonetic_text,
+        $sql = "SELECT l.*, w.word, w.pos, w.phonetic, w.phonetic_text, w.phonetic_am, w.phonetic_am_text, w.id as word_id,
                 cf_audio.file_url as audio_url,
                 cf_image.file_url as image_url
                 FROM {$this->table} l
@@ -36,9 +36,26 @@ class LearnModel extends Model {
         $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
+        $items = $stmt->fetchAll();
+        
+        // Lấy thêm senses và examples cho mỗi từ
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        foreach ($items as &$item) {
+            // Lấy senses
+            $senses = $senseModel->getByWordId($item['word_id']);
+            
+            // Lấy examples cho mỗi sense
+            foreach ($senses as &$sense) {
+                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+            }
+            
+            $item['senses'] = $senses;
+        }
         
         return [
-            'items' => $stmt->fetchAll(),
+            'items' => $items,
             'total' => $total,
             'page' => $page,
             'limit' => $limit,
@@ -67,7 +84,7 @@ class LearnModel extends Model {
         $total = $stmt->fetch()['total'];
         
         // Lấy dữ liệu theo trang
-        $sql = "SELECT l.*, w.word, w.pos, w.phonetic_text,
+        $sql = "SELECT l.*, w.word, w.pos, w.phonetic, w.phonetic_text, w.phonetic_am, w.phonetic_am_text, w.id as word_id,
                 cf_audio.file_url as audio_url,
                 cf_image.file_url as image_url
                 FROM {$this->table} l
@@ -83,9 +100,26 @@ class LearnModel extends Model {
         $stmt->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
         $stmt->execute();
+        $items = $stmt->fetchAll();
+        
+        // Lấy thêm senses và examples cho mỗi từ
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        foreach ($items as &$item) {
+            // Lấy senses
+            $senses = $senseModel->getByWordId($item['word_id']);
+            
+            // Lấy examples cho mỗi sense
+            foreach ($senses as &$sense) {
+                $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+            }
+            
+            $item['senses'] = $senses;
+        }
         
         return [
-            'items' => $stmt->fetchAll(),
+            'items' => $items,
             'total' => $total,
             'page' => $page,
             'limit' => $limit,
@@ -101,16 +135,40 @@ class LearnModel extends Model {
      * @return array|false
      */
     public function getByUserIdAndWordId($userId, $wordId) {
-        $sql = "SELECT l.*, w.word, w.pos, w.phonetic_text
+        $sql = "SELECT l.*, w.word, w.pos, w.phonetic, w.phonetic_text, w.phonetic_am, w.phonetic_am_text, w.id as word_id,
+                cf_audio.file_url as audio_url,
+                cf_image.file_url as image_url
                 FROM {$this->table} l
                 LEFT JOIN words w ON l.word_id = w.id
+                LEFT JOIN cloudinary_files cf_audio ON w.audio_id = cf_audio.id 
+                LEFT JOIN cloudinary_files cf_image ON w.image_id = cf_image.id 
                 WHERE l.user_id = :user_id AND l.word_id = :word_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindValue(':user_id', $userId);
         $stmt->bindValue(':word_id', $wordId);
         $stmt->execute();
         
-        return $stmt->fetch();
+        $item = $stmt->fetch();
+        
+        if (!$item) {
+            return false;
+        }
+        
+        // Lấy senses và examples
+        $senseModel = new SenseModel($this->conn);
+        $exampleModel = new ExampleModel($this->conn);
+        
+        // Lấy senses
+        $senses = $senseModel->getByWordId($item['word_id']);
+        
+        // Lấy examples cho mỗi sense
+        foreach ($senses as &$sense) {
+            $sense['examples'] = $exampleModel->getBySenseId($sense['id']);
+        }
+        
+        $item['senses'] = $senses;
+        
+        return $item;
     }
     
     /**

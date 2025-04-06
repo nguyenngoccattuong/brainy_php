@@ -1056,23 +1056,14 @@ with_lessons: true/false (mặc định: true) - Có lấy danh sách bài học
 
 ### Get All Learn Status
 
-Lấy tất cả trạng thái học của người dùng hiện tại
+Lấy danh sách trạng thái học của người dùng.
 
 - **URL:** `/api/learn`
 - **Method:** `GET`
 - **Auth Required:** Yes
-- **Permissions Required:** User
-
-**Headers:**
-```
-Authorization: Bearer {token}
-```
-
-**Query Parameters:**
-```
-page: Số trang (mặc định: 1)
-limit: Số lượng kết quả mỗi trang (mặc định: 10)
-```
+- **Query Parameters:**
+  - `page` (optional): Số trang, mặc định là 1
+  - `limit` (optional): Số lượng kết quả trên một trang, mặc định là 10
 
 **Success Response:**
 ```json
@@ -1091,17 +1082,36 @@ limit: Số lượng kết quả mỗi trang (mặc định: 10)
           "status": "learning",
           "created_at": "datetime",
           "updated_at": "datetime",
-          "word": "example",
-          "pos": "n",
-          "phonetic_text": "/ɪɡˈzɑːmpl/",
+          "word": "attendance",
+          "pos": "noun",
+          "phonetic_text": "/əˈtendəns/",
           "audio_url": "https://res.cloudinary.com/...",
-          "image_url": "https://res.cloudinary.com/..."
+          "image_url": "https://res.cloudinary.com/...",
+          "senses": [
+            {
+              "id": "uuid",
+              "word_id": "uuid",
+              "definition": "The act of being present at a place or event",
+              "created_at": "datetime",
+              "updated_at": "datetime",
+              "examples": [
+                {
+                  "id": "uuid",
+                  "sense_id": "uuid",
+                  "cf": "School attendance is mandatory.",
+                  "x": "Việc đi học là bắt buộc.",
+                  "created_at": "datetime",
+                  "updated_at": "datetime"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "total": 10,
+      "total": 50,
       "page": 1,
       "limit": 10,
-      "total_pages": 1
+      "total_pages": 5
     }
   }
 }
@@ -1109,24 +1119,15 @@ limit: Số lượng kết quả mỗi trang (mặc định: 10)
 
 ### Get Learn Status By Status
 
-Lấy trạng thái học lọc theo status
+Lấy danh sách trạng thái học của người dùng theo status.
 
 - **URL:** `/api/learn/status`
 - **Method:** `GET`
 - **Auth Required:** Yes
-- **Permissions Required:** User
-
-**Headers:**
-```
-Authorization: Bearer {token}
-```
-
-**Query Parameters:**
-```
-status: Trạng thái học (learning, learned, skip)
-page: Số trang (mặc định: 1)
-limit: Số lượng kết quả mỗi trang (mặc định: 10)
-```
+- **Query Parameters:**
+  - `status` (required): Trạng thái học (skip, learned, learning)
+  - `page` (optional): Số trang, mặc định là 1
+  - `limit` (optional): Số lượng kết quả trên một trang, mặc định là 10
 
 **Success Response:**
 ```json
@@ -1145,17 +1146,36 @@ limit: Số lượng kết quả mỗi trang (mặc định: 10)
           "status": "learning",
           "created_at": "datetime",
           "updated_at": "datetime",
-          "word": "example",
-          "pos": "n",
-          "phonetic_text": "/ɪɡˈzɑːmpl/",
+          "word": "attendance",
+          "pos": "noun",
+          "phonetic_text": "/əˈtendəns/",
           "audio_url": "https://res.cloudinary.com/...",
-          "image_url": "https://res.cloudinary.com/..."
+          "image_url": "https://res.cloudinary.com/...",
+          "senses": [
+            {
+              "id": "uuid",
+              "word_id": "uuid",
+              "definition": "The act of being present at a place or event",
+              "created_at": "datetime",
+              "updated_at": "datetime",
+              "examples": [
+                {
+                  "id": "uuid",
+                  "sense_id": "uuid",
+                  "cf": "School attendance is mandatory.",
+                  "x": "Việc đi học là bắt buộc.",
+                  "created_at": "datetime",
+                  "updated_at": "datetime"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "total": 5,
+      "total": 20,
       "page": 1,
       "limit": 10,
-      "total_pages": 1
+      "total_pages": 2
     }
   }
 }
@@ -1163,17 +1183,11 @@ limit: Số lượng kết quả mỗi trang (mặc định: 10)
 
 ### Get Learn Status of Word
 
-Lấy trạng thái học của một từ cụ thể
+Lấy trạng thái học cụ thể của một từ.
 
-- **URL:** `/api/learn/:wordId`
+- **URL:** `/api/learn/words/{wordId}`
 - **Method:** `GET`
 - **Auth Required:** Yes
-- **Permissions Required:** User
-
-**Headers:**
-```
-Authorization: Bearer {token}
-```
 
 **Success Response:**
 ```json
@@ -1190,99 +1204,46 @@ Authorization: Bearer {token}
       "status": "learning",
       "created_at": "datetime",
       "updated_at": "datetime",
-      "word": "example",
-      "pos": "n",
-      "phonetic_text": "/ɪɡˈzɑːmpl/"
+      "word": "attendance",
+      "pos": "noun",
+      "phonetic_text": "/əˈtendəns/",
+      "audio_url": "https://res.cloudinary.com/...",
+      "image_url": "https://res.cloudinary.com/...",
+      "senses": [
+        {
+          "id": "uuid",
+          "word_id": "uuid",
+          "definition": "The act of being present at a place or event",
+          "created_at": "datetime",
+          "updated_at": "datetime",
+          "examples": [
+            {
+              "id": "uuid",
+              "sense_id": "uuid",
+              "cf": "School attendance is mandatory.",
+              "x": "Việc đi học là bắt buộc.",
+              "created_at": "datetime",
+              "updated_at": "datetime"
+            }
+          ]
+        }
+      ]
     }
   }
-}
-```
-
-**Error Response:**
-```json
-{
-  "status": "error",
-  "code": 404,
-  "success": false,
-  "message": "Không tìm thấy thông tin học từ này"
-}
-```
-
-### Create Learn Status
-
-Tạo mới trạng thái học cho một từ
-
-- **URL:** `/api/learn`
-- **Method:** `POST`
-- **Auth Required:** Yes
-- **Permissions Required:** User
-
-**Headers:**
-```
-Authorization: Bearer {token}
-Content-Type: application/json
-```
-
-**Request Body:**
-```json
-{
-  "word_id": "uuid-of-word",
-  "status": "learning" // Có thể là "learning", "learned" hoặc "skip"
-}
-```
-
-**Success Response:**
-```json
-{
-  "status": "success",
-  "code": 201,
-  "success": true,
-  "message": "Tạo trạng thái học thành công",
-  "data": {
-    "learn": {
-      "id": "uuid",
-      "user_id": "uuid",
-      "word_id": "uuid",
-      "status": "learning",
-      "created_at": "datetime",
-      "updated_at": "datetime",
-      "word": "example",
-      "pos": "n",
-      "phonetic_text": "/ɪɡˈzɑːmpl/"
-    }
-  }
-}
-```
-
-**Error Response:**
-```json
-{
-  "status": "error",
-  "code": 400,
-  "success": false,
-  "message": "Word ID không hợp lệ"
 }
 ```
 
 ### Update Learn Status
 
-Cập nhật trạng thái học của một từ
+Cập nhật trạng thái học của một từ.
 
-- **URL:** `/api/learn/:wordId`
+- **URL:** `/api/learn/words/{wordId}`
 - **Method:** `PUT`
 - **Auth Required:** Yes
-- **Permissions Required:** User
-
-**Headers:**
-```
-Authorization: Bearer {token}
-Content-Type: application/json
-```
-
-**Request Body:**
+- **Body:**
 ```json
 {
-  "status": "learned" // Có thể là "learning", "learned" hoặc "skip"
+  "status": "learned"
 }
 ```
 
@@ -1301,37 +1262,42 @@ Content-Type: application/json
       "status": "learned",
       "created_at": "datetime",
       "updated_at": "datetime",
-      "word": "example",
-      "pos": "n",
-      "phonetic_text": "/ɪɡˈzɑːmpl/"
+      "word": "attendance",
+      "pos": "noun",
+      "phonetic_text": "/əˈtendəns/",
+      "audio_url": "https://res.cloudinary.com/...",
+      "image_url": "https://res.cloudinary.com/...",
+      "senses": [
+        {
+          "id": "uuid",
+          "word_id": "uuid",
+          "definition": "The act of being present at a place or event",
+          "created_at": "datetime",
+          "updated_at": "datetime",
+          "examples": [
+            {
+              "id": "uuid",
+              "sense_id": "uuid",
+              "cf": "School attendance is mandatory.",
+              "x": "Việc đi học là bắt buộc.",
+              "created_at": "datetime",
+              "updated_at": "datetime"
+            }
+          ]
+        }
+      ]
     }
   }
 }
 ```
 
-**Error Response:**
-```json
-{
-  "status": "error",
-  "code": 400,
-  "success": false,
-  "message": "Status không hợp lệ"
-}
-```
-
 ### Delete Learn Status
 
-Xóa trạng thái học của một từ
+Xóa trạng thái học của một từ.
 
-- **URL:** `/api/learn/:wordId`
+- **URL:** `/api/learn/words/{wordId}`
 - **Method:** `DELETE`
 - **Auth Required:** Yes
-- **Permissions Required:** User
-
-**Headers:**
-```
-Authorization: Bearer {token}
-```
 
 **Success Response:**
 ```json
@@ -1341,16 +1307,6 @@ Authorization: Bearer {token}
   "success": true,
   "message": "Xóa trạng thái học thành công",
   "data": null
-}
-```
-
-**Error Response:**
-```json
-{
-  "status": "error",
-  "code": 404,
-  "success": false,
-  "message": "Không tìm thấy thông tin học từ này"
 }
 ```
 

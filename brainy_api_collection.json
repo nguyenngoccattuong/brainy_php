@@ -989,8 +989,49 @@
                                     "value": "10"
                                 }
                             ]
+                        },
+                        "description": "Lấy danh sách trạng thái học của người dùng. Các từ sẽ được trả về kèm theo senses và examples."
+                    },
+                    "response": [
+                        {
+                            "name": "Example Response",
+                            "originalRequest": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{access_token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/api/learn?page=1&limit=10",
+                                    "host": ["{{base_url}}"],
+                                    "path": ["api", "learn"],
+                                    "query": [
+                                        {
+                                            "key": "page",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "key": "limit",
+                                            "value": "10"
+                                        }
+                                    ]
+                                }
+                            },
+                            "status": "OK",
+                            "code": 200,
+                            "_postman_previewlanguage": "json",
+                            "header": [
+                                {
+                                    "key": "Content-Type",
+                                    "value": "application/json"
+                                }
+                            ],
+                            "cookie": [],
+                            "body": "{\n  \"status\": \"success\",\n  \"code\": 200,\n  \"success\": true,\n  \"message\": \"Lấy danh sách trạng thái học thành công\",\n  \"data\": {\n    \"learn\": {\n      \"items\": [\n        {\n          \"id\": \"e1d02096-7c8e-4802-b30e-321dc3af012\",\n          \"user_id\": \"6201348b-ede8-4b1f-a58e-4805e0b10f39\",\n          \"word_id\": \"0561340a-fce0-4133-8f3a-4c76e923371e\",\n          \"status\": \"learning\",\n          \"created_at\": \"2025-04-06 13:09:46\",\n          \"updated_at\": \"2025-04-06 13:09:46\",\n          \"word\": \"attendance\",\n          \"pos\": \"noun\",\n          \"phonetic_text\": \"/əˈtendəns/\",\n          \"audio_url\": \"https://res.cloudinary.com/example/audio/upload/attendance.mp3\",\n          \"image_url\": \"https://res.cloudinary.com/example/image/upload/attendance.jpg\",\n          \"senses\": [\n            {\n              \"id\": \"7a5c3d92-1f2e-4b81-9c5a-2d7e8f6g9h0i\",\n              \"word_id\": \"0561340a-fce0-4133-8f3a-4c76e923371e\",\n              \"definition\": \"The act of being present at a place or event\",\n              \"created_at\": \"2025-04-06 13:09:46\",\n              \"updated_at\": \"2025-04-06 13:09:46\",\n              \"examples\": [\n                {\n                  \"id\": \"8b6d4e03-2g3f-5c92-0d6b-3e8f7g9h0i1j\",\n                  \"sense_id\": \"7a5c3d92-1f2e-4b81-9c5a-2d7e8f6g9h0i\",\n                  \"cf\": \"School attendance is mandatory.\",\n                  \"x\": \"Việc đi học là bắt buộc.\",\n                  \"created_at\": \"2025-04-06 13:09:46\",\n                  \"updated_at\": \"2025-04-06 13:09:46\"\n                }\n              ]\n            }\n          ]\n        }\n      ],\n      \"total\": 50,\n      \"page\": 1,\n      \"limit\": 10,\n      \"total_pages\": 5\n    }\n  }\n}"
                         }
-                    }
+                    ]
                 },
                 {
                     "name": "Get Learn Status By Status",

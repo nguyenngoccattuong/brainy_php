@@ -1,10 +1,6 @@
 <?php
 namespace App\Config;
 
-/**
- * Class Cloudinary
- * Cấu hình và quản lý kết nối đến Cloudinary
- */
 class Cloudinary {
     private $cloudName;
     private $apiKey;

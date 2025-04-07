@@ -1084,7 +1084,10 @@ Lấy danh sách trạng thái học của người dùng.
           "updated_at": "datetime",
           "word": "attendance",
           "pos": "noun",
+          "phonetic": "https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/a/att/atten/attendance__gb_1.mp3",
           "phonetic_text": "/əˈtendəns/",
+          "phonetic_am": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/att/atten/attendance__us_1.mp3",
+          "phonetic_am_text": "/əˈtendəns/",
           "audio_url": "https://res.cloudinary.com/...",
           "image_url": "https://res.cloudinary.com/...",
           "senses": [
@@ -1148,7 +1151,10 @@ Lấy danh sách trạng thái học của người dùng theo status.
           "updated_at": "datetime",
           "word": "attendance",
           "pos": "noun",
+          "phonetic": "https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/a/att/atten/attendance__gb_1.mp3",
           "phonetic_text": "/əˈtendəns/",
+          "phonetic_am": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/att/atten/attendance__us_1.mp3",
+          "phonetic_am_text": "/əˈtendəns/",
           "audio_url": "https://res.cloudinary.com/...",
           "image_url": "https://res.cloudinary.com/...",
           "senses": [
@@ -1206,7 +1212,10 @@ Lấy trạng thái học cụ thể của một từ.
       "updated_at": "datetime",
       "word": "attendance",
       "pos": "noun",
+      "phonetic": "https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/a/att/atten/attendance__gb_1.mp3",
       "phonetic_text": "/əˈtendəns/",
+      "phonetic_am": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/att/atten/attendance__us_1.mp3",
+      "phonetic_am_text": "/əˈtendəns/",
       "audio_url": "https://res.cloudinary.com/...",
       "image_url": "https://res.cloudinary.com/...",
       "senses": [
@@ -1264,7 +1273,10 @@ Cập nhật trạng thái học của một từ.
       "updated_at": "datetime",
       "word": "attendance",
       "pos": "noun",
+      "phonetic": "https://www.oxfordlearnersdictionaries.com/media/english/uk_pron/a/att/atten/attendance__gb_1.mp3",
       "phonetic_text": "/əˈtendəns/",
+      "phonetic_am": "https://www.oxfordlearnersdictionaries.com/media/english/us_pron/a/att/atten/attendance__us_1.mp3",
+      "phonetic_am_text": "/əˈtendəns/",
       "audio_url": "https://res.cloudinary.com/...",
       "image_url": "https://res.cloudinary.com/...",
       "senses": [

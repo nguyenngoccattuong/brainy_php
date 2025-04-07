@@ -61,16 +61,12 @@ class AuthMiddleware {
     }
     
     /**
-     * Kiểm tra xem người dùng có quyền truy cập tài nguyên không
-     * Có thể mở rộng để kiểm tra quyền chi tiết hơn
-     * 
      * @param string $resourceId ID của tài nguyên (nếu cần)
      * @param string $userId ID của người dùng đã xác thực
      * @return bool
      */
     public function authorize($resourceId, $userId) {
-        // Mặc định cho phép truy cập
-        // Có thể mở rộng để kiểm tra quyền chi tiết hơn
+
         return true;
     }
 } 
